@@ -6,6 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { Gavel, Clock } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 interface LiveAuctionViewProps {
   auction: any
@@ -135,6 +142,7 @@ function LotCard({ lot: initialLot }: { lot: any }) {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0)
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [isWinning, setIsWinning] = useState(false)
+  const [showBidModal, setShowBidModal] = useState(false)
   
   const currentBid = lot.currentBidCents || lot.startingBidCents
   const minNextBid = currentBid + 500 // $5 increment
@@ -354,8 +362,8 @@ function LotCard({ lot: initialLot }: { lot: any }) {
   }
   
   const toggleBidHistory = () => {
-    setShowBidHistory(!showBidHistory)
-    if (!showBidHistory && bidHistory.length === 0) {
+    setShowBidModal(!showBidModal)
+    if (!showBidModal && bidHistory.length === 0) {
       fetchBidHistory()
     }
   }
