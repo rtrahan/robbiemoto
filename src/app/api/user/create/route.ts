@@ -42,10 +42,18 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, user: existing })
       }
       
-      // Create new user
+      // Generate a cuid-like ID
+      const generateId = () => {
+        const timestamp = Date.now().toString(36)
+        const randomStr = Math.random().toString(36).substring(2, 15)
+        return `cm${timestamp}${randomStr}`.substring(0, 25)
+      }
+      
+      // Create new user with generated ID
       const { data: user, error } = await supabaseServer
         .from('User')
         .insert({
+          id: generateId(),
           clerkId: supabaseId,
           email,
           name,
