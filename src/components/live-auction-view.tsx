@@ -133,6 +133,8 @@ function LotCard({ lot: initialLot }: { lot: any }) {
   const [lastBidder, setLastBidder] = useState<string | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [isWinning, setIsWinning] = useState(false)
   
   const currentBid = lot.currentBidCents || lot.startingBidCents
   const minNextBid = currentBid + 500 // $5 increment
@@ -161,6 +163,7 @@ function LotCard({ lot: initialLot }: { lot: any }) {
       try {
         const { getUser } = await import('@/lib/supabase-auth')
         const user = await getUser()
+        setCurrentUser(user)
         setIsLoggedIn(!!user)
       } catch (error) {
         console.log('Auth check failed (not logged in or error)', error)
@@ -180,7 +183,15 @@ function LotCard({ lot: initialLot }: { lot: any }) {
             const bids = await response.json()
             setBidHistory(bids)
             if (bids.length > 0) {
-              setLastBidder(bids[0].user?.name || bids[0].user?.alias || 'Someone')
+              const topBid = bids[0]
+              setLastBidder(topBid.user?.name || topBid.user?.alias || 'Someone')
+              
+              // Check if current user is winning
+              if (currentUser && topBid.user?.email === currentUser.email) {
+                setIsWinning(true)
+              } else {
+                setIsWinning(false)
+              }
             }
           }
         } catch (error) {
@@ -190,7 +201,7 @@ function LotCard({ lot: initialLot }: { lot: any }) {
     }
     
     loadInitialData()
-  }, [lot.id, lot._count?.bids])
+  }, [lot.id, lot._count?.bids, currentUser])
   
   // Auto-refresh current bid every 2 seconds for real-time feel
   useEffect(() => {
@@ -210,8 +221,16 @@ function LotCard({ lot: initialLot }: { lot: any }) {
             if (bidsResponse.ok) {
               const bids = await bidsResponse.json()
               if (bids.length > 0) {
-                setLastBidder(bids[0].user?.name || bids[0].user?.alias || 'Someone')
+                const topBid = bids[0]
+                setLastBidder(topBid.user?.name || topBid.user?.alias || 'Someone')
                 setBidHistory(bids)
+                
+                // Check if current user is winning
+                if (currentUser && topBid.user?.email === currentUser.email) {
+                  setIsWinning(true)
+                } else {
+                  setIsWinning(false)
+                }
               }
             }
             
@@ -342,7 +361,9 @@ function LotCard({ lot: initialLot }: { lot: any }) {
   }
   
   return (
-    <div className="group border border-gray-200 bg-white hover:border-gray-400 transition-all">
+    <div className={`group border-2 bg-white hover:border-gray-400 transition-all ${
+      isWinning ? 'border-green-500 shadow-lg shadow-green-100' : 'border-gray-200'
+    }`}>
       {/* Media Carousel */}
       <div className="aspect-square bg-gray-50 overflow-hidden relative">
         {lot.mediaUrls && lot.mediaUrls.length > 0 ? (
@@ -435,20 +456,35 @@ function LotCard({ lot: initialLot }: { lot: any }) {
         </div>
 
         {/* Current Bid */}
-        <div className={`border-t border-gray-100 pt-3 transition-all ${newBidFlash ? 'bg-yellow-50 -mx-4 px-4 py-3' : ''}`}>
+        <div className={`border-t pt-3 transition-all ${
+          newBidFlash ? 'bg-yellow-50 -mx-4 px-4 py-3 border-yellow-200' : 
+          isWinning ? 'bg-green-50 -mx-4 px-4 py-3 border-green-200' : 
+          'border-gray-100'
+        }`}>
           <div className="flex items-center justify-between mb-1">
-            <div className="text-[10px] uppercase tracking-wider text-gray-500">
+            <div className={`text-[10px] uppercase tracking-wider ${
+              isWinning ? 'text-green-700 font-semibold' : 'text-gray-500'
+            }`}>
               {lot.currentBidCents ? 'Current Bid' : 'Starting Bid'}
             </div>
+            {isWinning && (
+              <span className="text-[10px] text-green-700 font-bold">
+                🏆 You're Winning!
+              </span>
+            )}
           </div>
           
-          <div className="font-serif text-2xl font-light text-gray-900">
+          <div className={`font-serif text-2xl font-light ${
+            isWinning ? 'text-green-700' : 'text-gray-900'
+          }`}>
             {formatCurrency(currentBid)}
           </div>
           
           {lastBidder && lot.currentBidCents && (
-            <p className="text-xs text-gray-600 mt-1">
-              {lastBidder} • {lot._count.bids} {lot._count.bids === 1 ? 'bid' : 'bids'}
+            <p className={`text-xs mt-1 ${
+              isWinning ? 'text-green-700 font-medium' : 'text-gray-600'
+            }`}>
+              {isWinning ? 'Your bid' : lastBidder} • {lot._count.bids} {lot._count.bids === 1 ? 'bid' : 'bids'}
             </p>
           )}
           
