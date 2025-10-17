@@ -320,28 +320,62 @@ async function getDashboardData() {
         .from('User')
         .select('*', { count: 'exact', head: true })
       
+      // Get all lots to calculate bid totals
+      const { data: allLots } = await supabaseServer
+        .from('Lot')
+        .select('id, currentBidCents, auctionId, published')
+      
+      // Get total bid count
+      const { count: totalBidsCount } = await supabaseServer
+        .from('Bid')
+        .select('*', { count: 'exact', head: true })
+      
+      // Calculate stats
+      const totalCurrentBids = (allLots || []).reduce((sum: number, lot: any) => 
+        sum + (lot.currentBidCents || 0), 0)
+      
+      const liveAuctionIds = auctions
+        .filter((a: any) => getAuctionStatus(a) === 'LIVE')
+        .map((a: any) => a.id)
+      
       const stats = {
         totalAuctions: totalAuctions || 0,
         publishedAuctions: auctions.filter((a: any) => a.published).length,
-        liveAuctions: auctions.filter((a: any) => getAuctionStatus(a) === 'LIVE').length,
-        totalLots: auctions.reduce((sum: number, a: any) => sum + (a.lots?.length || 0), 0),
-        publishedLots: auctions.reduce((sum: number, a: any) => 
-          sum + (a.lots?.filter((l: any) => l.published).length || 0), 0),
-        totalBids: 0,
-        totalCurrentBids: 0,
-        activeBids: 0,
+        liveAuctions: liveAuctionIds.length,
+        totalLots: (allLots || []).length,
+        publishedLots: (allLots || []).filter((l: any) => l.published).length,
+        totalBids: totalBidsCount || 0,
+        totalCurrentBids: totalCurrentBids,
+        activeBids: totalBidsCount || 0, // TODO: Filter to live auctions only
         totalUsers: totalUsers || 0,
-        activeBidders: 0,
+        activeBidders: 0, // TODO: Count unique bidders
       }
       
-      const auctionsWithStats = auctions.map((auction: any) => ({
-        ...auction,
-        status: getAuctionStatus(auction),
-        _count: { lots: auction.lots?.length || 0 },
-        totalBids: 0,
-        currentBidTotal: auction.lots?.reduce((sum: number, l: any) => 
-          sum + (l.currentBidCents || 0), 0) || 0,
-      }))
+      const auctionsWithStats = await Promise.all(
+        auctions.map(async (auction: any) => {
+          // Get bid count for this auction's lots
+          const auctionLotIds = auction.lots?.map((l: any) => l.id) || []
+          
+          let bidCount = 0
+          if (auctionLotIds.length > 0) {
+            const { count } = await supabaseServer
+              .from('Bid')
+              .select('*', { count: 'exact', head: true })
+              .in('lotId', auctionLotIds)
+            
+            bidCount = count || 0
+          }
+          
+          return {
+            ...auction,
+            status: getAuctionStatus(auction),
+            _count: { lots: auction.lots?.length || 0 },
+            totalBids: bidCount,
+            currentBidTotal: auction.lots?.reduce((sum: number, l: any) => 
+              sum + (l.currentBidCents || 0), 0) || 0,
+          }
+        })
+      )
       
       return { auctions: auctionsWithStats, stats }
     } catch (supabaseError) {
