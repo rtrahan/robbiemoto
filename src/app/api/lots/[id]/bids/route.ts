@@ -18,6 +18,7 @@ export async function GET(
             select: {
               alias: true,
               name: true,
+              email: true, // Include email for winning comparison
             },
           },
         },
@@ -35,7 +36,7 @@ export async function GET(
       
       const { data: bids } = await supabaseServer
         .from('Bid')
-        .select('*, user:User(alias, name)')
+        .select('*, user:User(alias, name, email)')
         .eq('lotId', id)
         .order('placedAt', { ascending: false })
         .limit(20)
