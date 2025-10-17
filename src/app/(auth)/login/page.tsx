@@ -34,7 +34,7 @@ export default function LoginPage() {
         
         // Create user in database with name
         if (data.user) {
-          await fetch('/api/user/create', {
+          const userResponse = await fetch('/api/user/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -43,6 +43,16 @@ export default function LoginPage() {
               supabaseId: data.user.id,
             }),
           })
+          
+          if (!userResponse.ok) {
+            const errorData = await userResponse.json()
+            console.error('Failed to create user in database:', errorData)
+            toast.error('Account created but profile setup failed. Please contact support.')
+            setIsLoading(false)
+            return
+          }
+          
+          console.log('User profile created successfully')
         }
         
         toast.success('Account created!')
