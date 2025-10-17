@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { stripe } from '@/lib/stripe'
 
@@ -12,9 +11,28 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    const { userId: clerkId } = await auth()
+    // Get authenticated user from Supabase
+    const { createServerClient } = await import('@supabase/ssr')
+    const { cookies } = await import('next/headers')
     
-    if (!clerkId) {
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://bdyuqcxtdawxhhdxgkic.supabase.co',
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+          set() {},
+          remove() {},
+        },
+      }
+    )
+    
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+    
+    if (!authUser?.email) {
       return NextResponse.json(
         { message: 'Unauthorized' },
         { status: 401 }
@@ -23,18 +41,14 @@ export async function POST(request: NextRequest) {
     
     // Get user from database
     let user = await prisma.user.findUnique({
-      where: { clerkId },
+      where: { email: authUser.email },
     })
     
     if (!user) {
-      // Create user if doesn't exist
-      const clerkUser = await auth()
-      user = await prisma.user.create({
-        data: {
-          clerkId,
-          email: clerkUser.sessionClaims?.email as string,
-        },
-      })
+      return NextResponse.json(
+        { message: 'User not found' },
+        { status: 404 }
+      )
     }
     
     // Create or get Stripe customer

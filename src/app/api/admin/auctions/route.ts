@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
+import { isAdminAuthenticated } from '@/lib/auth'
 import { z } from 'zod'
 
 const auctionSchema = z.object({
@@ -18,20 +18,11 @@ const auctionSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId: clerkId } = await auth()
+    // Check admin authentication
+    const isAdmin = await isAdminAuthenticated()
     
-    if (!clerkId) {
+    if (!isAdmin) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    }
-    
-    // Verify admin role
-    const user = await prisma.user.findUnique({
-      where: { clerkId },
-      select: { role: true },
-    })
-    
-    if (!user || user.role !== 'ADMIN') {
-      return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
     }
     
     const body = await request.json()

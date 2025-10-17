@@ -111,7 +111,10 @@ async function getCurrentOrNextAuction() {
     
     return nextAuction ? { ...nextAuction, status: 'preview' as const } : null
   } catch (error) {
-    console.log('Database not available, using mock auction')
+    console.error('❌ DATABASE CONNECTION ERROR:', error)
+    console.error('DATABASE_URL present:', !!process.env.DATABASE_URL)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
+    
     // Return mock auction for demo
     const now = new Date()
     const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
