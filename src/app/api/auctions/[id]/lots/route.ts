@@ -36,13 +36,32 @@ export async function GET(
       
       const { data: lots } = await supabaseServer
         .from('Lot')
-        .select('*, _count:Bid(count)')
+        .select('*')
         .eq('auctionId', id)
         .eq('published', true)
         .order('featured', { ascending: false })
         .order('sortOrder', { ascending: true })
       
-      return NextResponse.json(lots || [])
+      if (!lots) {
+        return NextResponse.json([])
+      }
+      
+      // Manually fetch bid counts for each lot
+      const lotsWithCounts = await Promise.all(
+        lots.map(async (lot: any) => {
+          const { count } = await supabaseServer
+            .from('Bid')
+            .select('*', { count: 'exact', head: true })
+            .eq('lotId', lot.id)
+          
+          return {
+            ...lot,
+            _count: { bids: count || 0 },
+          }
+        })
+      )
+      
+      return NextResponse.json(lotsWithCounts)
     }
   } catch (error) {
     console.error('Error fetching lots:', error)
