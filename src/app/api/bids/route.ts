@@ -167,7 +167,13 @@ export async function POST(request: NextRequest) {
           .maybeSingle()
         
         if (createError) {
-          console.error('User creation error:', createError)
+          console.error('User creation error - Full details:', {
+            code: createError.code,
+            message: createError.message,
+            details: createError.details,
+            hint: createError.hint,
+          })
+          
           // If user already exists (race condition), try to fetch again
           if (createError.code === '23505') { // Unique violation
             const { data: existingUser } = await supabaseServer
@@ -178,8 +184,12 @@ export async function POST(request: NextRequest) {
             
             supaUser = existingUser
           } else {
+            // Return detailed error for debugging
             return NextResponse.json(
-              { error: 'User account issue. Please contact support.' },
+              { 
+                error: 'Database error. RLS might be blocking. Check Vercel logs.',
+                details: createError.message 
+              },
               { status: 500 }
             )
           }
