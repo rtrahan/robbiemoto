@@ -172,7 +172,8 @@ export async function POST(request: NextRequest) {
         return `cm${timestamp}${randomStr}`.substring(0, 25)
       }
       
-      // Create bid using Supabase
+      // Create bid using Supabase with all required fields
+      const now = new Date().toISOString()
       const { data: bid, error: bidError } = await supabaseServer
         .from('Bid')
         .insert({
@@ -182,6 +183,8 @@ export async function POST(request: NextRequest) {
           amountCents,
           status: 'LEADING',
           isLeading: true,
+          placedAt: now,
+          updatedAt: now,
         })
         .select()
         .single()
