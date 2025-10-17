@@ -37,11 +37,6 @@ export const metadata: Metadata = {
   },
 }
 
-// Check if we're running in demo mode (without auth)
-const isDemoMode = 
-  !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 
-  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('placeholder')
-
 export default function RootLayout({
   children,
 }: {
@@ -50,11 +45,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="min-h-screen bg-background font-sans antialiased">
-        {isDemoMode && (
-          <div className="bg-yellow-50 border-b border-yellow-200 p-2 text-center text-sm text-yellow-800">
-            ⚠️ Running in demo mode without authentication. Some features are disabled.
-          </div>
-        )}
         {children}
         <Toaster position="bottom-right" />
       </body>
