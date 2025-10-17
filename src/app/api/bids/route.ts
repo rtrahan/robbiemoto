@@ -145,15 +145,17 @@ export async function POST(request: NextRequest) {
         )
       }
       
-      // Find or create user in Supabase
-      let { data: supaUser } = await supabaseServer
+      // Find user in Supabase
+      let { data: supaUser, error: userError } = await supabaseServer
         .from('User')
         .select('*')
         .eq('email', authUser.email)
-        .single()
+        .maybeSingle()
       
-      if (!supaUser) {
-        const { data: newUser } = await supabaseServer
+      if (!supaUser && !userError) {
+        // Try to create user
+        console.log('Creating user in Supabase for:', authUser.email)
+        const { data: newUser, error: createError } = await supabaseServer
           .from('User')
           .insert({
             clerkId: authUser.id,
@@ -162,15 +164,35 @@ export async function POST(request: NextRequest) {
             alias: authUser.email.split('@')[0],
           })
           .select()
-          .single()
+          .maybeSingle()
         
-        supaUser = newUser
+        if (createError) {
+          console.error('User creation error:', createError)
+          // If user already exists (race condition), try to fetch again
+          if (createError.code === '23505') { // Unique violation
+            const { data: existingUser } = await supabaseServer
+              .from('User')
+              .select('*')
+              .eq('email', authUser.email)
+              .single()
+            
+            supaUser = existingUser
+          } else {
+            return NextResponse.json(
+              { error: 'User account issue. Please contact support.' },
+              { status: 500 }
+            )
+          }
+        } else {
+          supaUser = newUser
+        }
       }
       
       if (!supaUser) {
+        console.error('Could not find or create user')
         return NextResponse.json(
-          { error: 'Failed to create user' },
-          { status: 500 }
+          { error: 'User not found. Please sign up first.' },
+          { status: 404 }
         )
       }
       
