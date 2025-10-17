@@ -2,6 +2,7 @@ import { CountdownHero } from '@/components/landing/countdown-hero'
 import { LiveAuctionView } from '@/components/live-auction-view'
 import { LiveCountdown } from '@/components/live-countdown'
 import { UpcomingAuctionPreview } from '@/components/upcoming-auction-preview'
+import { PastAuctionsSection } from '@/components/past-auctions-section'
 import { AuthHeader } from '@/components/auth-header'
 import { prisma } from '@/lib/prisma'
 
@@ -64,6 +65,9 @@ export default async function HomePage() {
       </main>
 
       {/* Footer */}
+      {/* Past Auctions Section */}
+      <PastAuctionsSection />
+      
       <footer className="border-t border-gray-100 py-8 text-center">
         <p className="text-xs uppercase tracking-[0.2em] text-gray-400">
           © 2025 Robbiemoto. Handcrafted with care.
