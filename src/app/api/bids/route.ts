@@ -165,10 +165,18 @@ export async function POST(request: NextRequest) {
         )
       }
       
+      // Generate ID for bid
+      const generateId = () => {
+        const timestamp = Date.now().toString(36)
+        const randomStr = Math.random().toString(36).substring(2, 15)
+        return `cm${timestamp}${randomStr}`.substring(0, 25)
+      }
+      
       // Create bid using Supabase
       const { data: bid, error: bidError } = await supabaseServer
         .from('Bid')
         .insert({
+          id: generateId(),
           lotId,
           userId: supaUser.id,
           amountCents,
