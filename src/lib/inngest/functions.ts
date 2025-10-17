@@ -187,6 +187,9 @@ export const handleLotWon = inngest.createFunction(
     if (winner.paymentMethods.length > 0 && winner.stripeCustomerId) {
       const paymentResult = await step.run('charge-payment', async () => {
         try {
+          if (!stripe) {
+            throw new Error('Stripe not configured')
+          }
           const paymentIntent = await stripe.paymentIntents.create({
             amount: total,
             currency: 'usd',

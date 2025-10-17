@@ -8,6 +8,13 @@ const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
 export async function POST(request: NextRequest) {
   try {
+    if (!stripe) {
+      return NextResponse.json(
+        { message: 'Stripe not configured' },
+        { status: 503 }
+      )
+    }
+    
     const body = await request.text()
     const signature = (await headers()).get('stripe-signature')!
     
@@ -65,6 +72,11 @@ export async function POST(request: NextRequest) {
 
 async function handleSetupIntentSucceeded(setupIntent: Stripe.SetupIntent) {
   console.log('SetupIntent succeeded:', setupIntent.id)
+  
+  if (!stripe) {
+    console.error('Stripe not configured')
+    return
+  }
   
   if (!setupIntent.payment_method || !setupIntent.customer) {
     return

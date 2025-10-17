@@ -5,6 +5,13 @@ import { stripe } from '@/lib/stripe'
 
 export async function POST(request: NextRequest) {
   try {
+    if (!stripe) {
+      return NextResponse.json(
+        { message: 'Stripe not configured' },
+        { status: 503 }
+      )
+    }
+    
     const { userId: clerkId } = await auth()
     
     if (!clerkId) {
