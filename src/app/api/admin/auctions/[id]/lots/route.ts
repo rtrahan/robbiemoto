@@ -24,8 +24,21 @@ export async function GET(
       
       return NextResponse.json(lots)
     } catch (dbError) {
-      console.log('Database not available')
-      return NextResponse.json([])
+      console.log('Prisma failed, using Supabase for admin lots')
+      
+      const { supabaseServer } = await import('@/lib/supabase-server')
+      
+      if (!supabaseServer) {
+        return NextResponse.json([])
+      }
+      
+      const { data: lots } = await supabaseServer
+        .from('Lot')
+        .select('*, _count:Bid(count)')
+        .eq('auctionId', id)
+        .order('sortOrder', { ascending: true })
+      
+      return NextResponse.json(lots || [])
     }
   } catch (error) {
     console.error('Error fetching lots:', error)

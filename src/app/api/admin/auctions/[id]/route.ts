@@ -31,18 +31,38 @@ export async function GET(
       
       return NextResponse.json(auction)
     } catch (dbError) {
-      // Database not available, return mock data
-      console.log('Database not available, using mock auction data')
-      const mockAuction = getMockAuctionById(id)
+      console.log('Prisma failed, using Supabase for auction detail')
       
-      if (!mockAuction) {
+      const { supabaseServer } = await import('@/lib/supabase-server')
+      
+      if (!supabaseServer) {
+        return NextResponse.json(
+          { error: 'Database not available' },
+          { status: 503 }
+        )
+      }
+      
+      const { data: auction } = await supabaseServer
+        .from('Auction')
+        .select('*, lots:Lot(*)')
+        .eq('id', id)
+        .single()
+      
+      if (!auction) {
         return NextResponse.json(
           { error: 'Auction not found' },
           { status: 404 }
         )
       }
       
-      return NextResponse.json(mockAuction)
+      // Format to match Prisma structure
+      const formattedAuction = {
+        ...auction,
+        lots: (auction.lots || []).sort((a: any, b: any) => a.sortOrder - b.sortOrder),
+        _count: { lots: auction.lots?.length || 0 },
+      }
+      
+      return NextResponse.json(formattedAuction)
     }
   } catch (error) {
     console.error('Error fetching auction:', error)

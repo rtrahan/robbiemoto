@@ -12,6 +12,40 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+    
+    // Get authenticated user from auth token in header (declare here for scope)
+    const authHeader = request.headers.get('authorization')
+    const token = authHeader?.replace('Bearer ', '')
+    
+    console.log('Bid API - Checking auth:', { hasToken: !!token })
+    
+    let authUser: any = null
+    
+    if (token) {
+      // Verify token with Supabase
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://bdyuqcxtdawxhhdxgkic.supabase.co',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      )
+      
+      const { data, error } = await supabase.auth.getUser(token)
+      authUser = data?.user
+      
+      console.log('Bid API - Auth result:', {
+        hasUser: !!authUser,
+        email: authUser?.email,
+        error: error?.message,
+      })
+    }
+    
+    if (!authUser || !authUser.email) {
+      console.error('No authenticated user found')
+      return NextResponse.json(
+        { error: 'You must be logged in to place a bid. Please refresh and try again.' },
+        { status: 401 }
+      )
+    }
 
     try {
       // Get the lot
@@ -39,61 +73,25 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         )
       }
-
-      // Get authenticated user from auth token in header
-      const authHeader = request.headers.get('authorization')
-      const token = authHeader?.replace('Bearer ', '')
       
-      console.log('Bid API - Checking auth:', { hasToken: !!token })
+      // Find or create user in database
+      let user = await prisma.user.findUnique({
+        where: { email: authUser.email },
+      })
       
-      let authUser = null
+      console.log('Found user in DB:', { userId: user?.id, userName: user?.name })
       
-      if (token) {
-        // Verify token with Supabase
-        const { createClient } = await import('@supabase/supabase-js')
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://bdyuqcxtdawxhhdxgkic.supabase.co',
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-        )
-        
-        const { data, error } = await supabase.auth.getUser(token)
-        authUser = data?.user
-        
-        console.log('Bid API - Auth result:', {
-          hasUser: !!authUser,
-          email: authUser?.email,
-          error: error?.message,
+      if (!user) {
+        // Create user if doesn't exist
+        console.log('Creating new user in DB for:', authUser.email)
+        user = await prisma.user.create({
+          data: {
+            clerkId: authUser.id,
+            email: authUser.email,
+            name: authUser.email.split('@')[0],
+            alias: authUser.email.split('@')[0],
+          },
         })
-      }
-      
-      let user
-      if (authUser && authUser.email) {
-        // Find existing user in database
-        user = await prisma.user.findUnique({
-          where: { email: authUser.email },
-        })
-        
-        console.log('Found user in DB:', { userId: user?.id, userName: user?.name })
-        
-        if (!user) {
-          // Create user if doesn't exist (shouldn't happen if they signed up properly)
-          console.log('Creating new user in DB for:', authUser.email)
-          user = await prisma.user.create({
-            data: {
-              clerkId: authUser.id,
-              email: authUser.email,
-              name: authUser.email.split('@')[0],
-              alias: authUser.email.split('@')[0],
-            },
-          })
-        }
-      } else {
-        // Not authenticated - should not happen as frontend blocks this
-        console.error('No authenticated user found')
-        return NextResponse.json(
-          { error: 'You must be logged in to place a bid. Please refresh and try again.' },
-          { status: 401 }
-        )
       }
       
       // Create the bid
@@ -135,14 +133,95 @@ export async function POST(request: NextRequest) {
         newCurrentBid: amountCents,
       })
     } catch (dbError) {
-      console.log('Database not available, simulating bid')
+      console.log('Prisma failed, using Supabase for bid')
+      
+      // Fallback to Supabase
+      const { supabaseServer } = await import('@/lib/supabase-server')
+      
+      if (!supabaseServer || !authUser?.email) {
+        return NextResponse.json(
+          { error: 'Database not available' },
+          { status: 503 }
+        )
+      }
+      
+      // Find or create user in Supabase
+      let { data: supaUser } = await supabaseServer
+        .from('User')
+        .select('*')
+        .eq('email', authUser.email)
+        .single()
+      
+      if (!supaUser) {
+        const { data: newUser } = await supabaseServer
+          .from('User')
+          .insert({
+            clerkId: authUser.id,
+            email: authUser.email,
+            name: authUser.email.split('@')[0],
+            alias: authUser.email.split('@')[0],
+          })
+          .select()
+          .single()
+        
+        supaUser = newUser
+      }
+      
+      if (!supaUser) {
+        return NextResponse.json(
+          { error: 'Failed to create user' },
+          { status: 500 }
+        )
+      }
+      
+      // Create bid using Supabase
+      const { data: bid, error: bidError } = await supabaseServer
+        .from('Bid')
+        .insert({
+          lotId,
+          userId: supaUser.id,
+          amountCents,
+          status: 'LEADING',
+          isLeading: true,
+        })
+        .select()
+        .single()
+      
+      if (bidError) {
+        console.error('Supabase bid error:', bidError)
+        return NextResponse.json(
+          { error: 'Failed to place bid' },
+          { status: 500 }
+        )
+      }
+      
+      // Update previous bids to OUTBID
+      await supabaseServer
+        .from('Bid')
+        .update({ status: 'OUTBID', isLeading: false })
+        .eq('lotId', lotId)
+        .neq('id', bid.id)
+        .eq('isLeading', true)
+      
+      // Get lot to check reserve
+      const { data: lotData } = await supabaseServer
+        .from('Lot')
+        .select('reserveCents')
+        .eq('id', lotId)
+        .single()
+      
+      // Update lot's current bid
+      await supabaseServer
+        .from('Lot')
+        .update({
+          currentBidCents: amountCents,
+          reserveMet: lotData?.reserveCents ? amountCents >= lotData.reserveCents : true,
+        })
+        .eq('id', lotId)
+      
       return NextResponse.json({
         success: true,
-        bid: {
-          id: Date.now().toString(),
-          amountCents,
-          placedAt: new Date(),
-        },
+        bid,
         newCurrentBid: amountCents,
       })
     }
