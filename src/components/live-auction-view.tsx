@@ -170,12 +170,27 @@ function LotCard({ lot: initialLot }: { lot: any }) {
     checkAuth()
   }, [])
   
-  // Fetch initial bid history if lot has bids
+  // Fetch initial bid history and last bidder on mount
   useEffect(() => {
-    if (lot._count?.bids > 0) {
-      fetchBidHistory()
+    const loadInitialData = async () => {
+      if (lot._count?.bids > 0) {
+        try {
+          const response = await fetch(`/api/lots/${lot.id}/bids`)
+          if (response.ok) {
+            const bids = await response.json()
+            setBidHistory(bids)
+            if (bids.length > 0) {
+              setLastBidder(bids[0].user?.name || bids[0].user?.alias || 'Someone')
+            }
+          }
+        } catch (error) {
+          console.error('Failed to load initial bids')
+        }
+      }
     }
-  }, [lot.id])
+    
+    loadInitialData()
+  }, [lot.id, lot._count?.bids])
   
   // Auto-refresh current bid every 2 seconds for real-time feel
   useEffect(() => {
