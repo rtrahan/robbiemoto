@@ -1,0 +1,38 @@
+
+> robbiemugs@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.4.6 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.7.195:3000
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Compiled middleware in 91ms
+ ✓ Ready in 1042ms
+ ○ Compiling /api/upload ...
+ ✓ Compiled /api/upload in 814ms
+=== UPLOAD STARTING ===
+File received: test.jpg Size: 13 Type: image/jpeg
+Lot ID: test
+DATABASE_URL exists: true
+ANON_KEY exists: true
+Project ID: bdyuqcxtdawxhhdxgkic
+Supabase URL: https://bdyuqcxtdawxhhdxgkic.supabase.co
+Uploading to: test/1760551201716.jpg
+=== UPLOAD ERROR ===
+Error: Error [StorageApiError]: new row violates row-level security policy
+    at <unknown> (../../../src/lib/fetch.ts:33:15) {
+  __isStorageError: true,
+  status: 400,
+  statusCode: '403'
+}
+Error message: new row violates row-level security policy
+Error name: StorageApiError
+ POST /api/upload 500 in 1528ms
+[?25h
+npm notice
+npm notice New major version of npm available! 10.9.2 -> 11.6.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+npm notice To update run: npm install -g npm@11.6.2
+npm notice

@@ -1,0 +1,404 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+// User model - managed by Clerk, we store additional info
+model User {
+  id               String         @id @default(cuid())
+  clerkId          String         @unique
+  email            String         @unique
+  name             String?
+  alias            String?        // Display name for bidding
+  role             UserRole       @default(USER)
+  stripeCustomerId String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  bids           Bid[]
+  orders         Order[]
+  watchlist      Watchlist[]
+  addresses      Address[]
+  notifications  Notification[]
+  paymentMethods PaymentMethod[]
+
+  @@index([clerkId])
+  @@index([email])
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+// Waitlist/Signup for email capture
+model Signup {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  confirmed    Boolean  @default(false)
+  optInSms     Boolean  @default(false)
+  phoneNumber  String?
+  confirmedAt  DateTime?
+  createdAt    DateTime @default(now())
+
+  @@index([email])
+}
+
+// Auction event
+model Auction {
+  id                    String        @id @default(cuid())
+  slug                  String        @unique
+  name                  String
+  description           String?
+  status                AuctionStatus @default(DRAFT)
+  visibility            String        @default("open") // "open" for MVP
+  
+  startsAt              DateTime
+  endsAt                DateTime
+  actualEndedAt         DateTime?     // Actual end time after soft-close extensions
+  
+  // Soft-close settings
+  softCloseWindowSec    Int          @default(120) // 2 minutes
+  softCloseExtendSec    Int          @default(120) // 2 minutes
+  
+  // Bidding settings
+  incrementMode         String       @default("fixed") // "fixed" for MVP
+  fixedIncrementCents   Int          @default(500)  // $5
+  
+  // Display settings
+  featured              Boolean      @default(false)
+  published             Boolean      @default(false)
+  
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  lots                  Lot[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([startsAt])
+  @@index([published])
+}
+
+enum AuctionStatus {
+  DRAFT
+  PREVIEW
+  LIVE
+  ENDED
+  SETTLED
+  CANCELLED
+}
+
+// Individual auction item/lot
+model Lot {
+  id                String     @id @default(cuid())
+  slug              String     @unique
+  auctionId         String
+  auction           Auction    @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  
+  title             String
+  description       String?
+  condition         String?
+  dimensions        String?
+  materials         String?
+  mediaUrls         Json?      // Store uploaded image/video URLs
+  
+  // Pricing
+  startingBidCents  Int
+  reserveCents      Int?       // Hidden reserve price
+  buyNowCents       Int?       // Optional buy-now price
+  currentBidCents   Int?       // Cached current highest bid
+  
+  // Status
+  published         Boolean    @default(true)
+  sold              Boolean    @default(false)
+  reserveMet        Boolean    @default(false)
+  
+  // Display
+  sortOrder         Int        @default(0)
+  featured          Boolean    @default(false)
+  
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  media             Media[]
+  bids              Bid[]
+  order             Order?
+  watchlist         Watchlist[]
+
+  @@index([slug])
+  @@index([auctionId])
+  @@index([published])
+  @@index([auctionId, sortOrder])
+}
+
+// Media files for lots
+model Media {
+  id          String    @id @default(cuid())
+  lotId       String
+  lot         Lot       @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  
+  type        MediaType
+  url         String
+  key         String    // UploadThing key
+  thumbnailUrl String?
+  width       Int?
+  height      Int?
+  duration    Int?      // For videos, in seconds
+  size        Int?      // File size in bytes
+  sortOrder   Int       @default(0)
+  
+  createdAt   DateTime  @default(now())
+
+  @@index([lotId])
+  @@index([lotId, sortOrder])
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+// Bid records
+model Bid {
+  id              String    @id @default(cuid())
+  lotId           String
+  lot             Lot       @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  
+  amountCents     Int
+  isProxy         Boolean   @default(false)
+  maxProxyCents   Int?      // Max amount for proxy bidding
+  
+  status          BidStatus @default(PLACED)
+  isLeading       Boolean   @default(false)
+  
+  placedAt        DateTime  @default(now())
+  
+  @@index([lotId, placedAt(sort: Desc)])
+  @@index([userId])
+  @@index([lotId, isLeading])
+  @@index([status])
+}
+
+enum BidStatus {
+  PLACED
+  LEADING
+  OUTBID
+  RETRACTED
+  INVALID
+  WON
+}
+
+// Orders for winning bids
+model Order {
+  id                 String        @id @default(cuid())
+  userId             String
+  user               User          @relation(fields: [userId], references: [id])
+  lotId              String        @unique
+  lot                Lot           @relation(fields: [lotId], references: [id])
+  
+  // Pricing
+  finalPriceCents    Int           // Winning bid amount
+  shippingCents      Int           @default(899) // $8.99 flat rate
+  taxCents           Int           @default(0)
+  totalCents         Int
+  
+  // Payment
+  paymentIntentId    String?
+  paymentStatus      PaymentStatus @default(PENDING)
+  paidAt             DateTime?
+  
+  // Shipping
+  shippingAddressId  String?
+  shippingAddress    Address?      @relation(fields: [shippingAddressId], references: [id])
+  shippingStatus     ShippingStatus @default(PENDING)
+  trackingNumber     String?
+  shippedAt          DateTime?
+  deliveredAt        DateTime?
+  
+  // Metadata
+  status             OrderStatus   @default(PENDING)
+  notes              String?
+  
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([paymentStatus])
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum ShippingStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  RETURNED
+}
+
+// User addresses
+model Address {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name         String
+  line1        String
+  line2        String?
+  city         String
+  state        String
+  postalCode   String
+  country      String   @default("US")
+  phone        String?
+  
+  isDefault    Boolean  @default(false)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  orders       Order[]
+
+  @@index([userId])
+}
+
+// Payment methods (Stripe)
+model PaymentMethod {
+  id                  String   @id @default(cuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  stripePaymentMethodId String @unique
+  type                String   // card, etc
+  last4               String?
+  brand               String?  // visa, mastercard, etc
+  expMonth            Int?
+  expYear             Int?
+  isDefault           Boolean  @default(false)
+  
+  createdAt           DateTime @default(now())
+
+  @@index([userId])
+  @@index([stripePaymentMethodId])
+}
+
+// Watchlist
+model Watchlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lotId     String
+  lot       Lot      @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+
+  @@unique([userId, lotId])
+  @@index([userId])
+  @@index([lotId])
+}
+
+// Notifications
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type        NotificationType
+  channel     NotificationChannel @default(EMAIL)
+  subject     String?
+  message     String
+  metadata    Json?            // Store related IDs, etc
+  
+  sent        Boolean          @default(false)
+  sentAt      DateTime?
+  read        Boolean          @default(false)
+  readAt      DateTime?
+  
+  createdAt   DateTime         @default(now())
+
+  @@index([userId, read])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+enum NotificationType {
+  WAITLIST_CONFIRM
+  AUCTION_LIVE
+  OUTBID
+  BID_PLACED
+  AUCTION_ENDING_SOON
+  WON_LOT
+  PAYMENT_FAILED
+  PAYMENT_SUCCEEDED
+  ORDER_SHIPPED
+  GENERAL
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  PUSH
+}
+
+// Admin settings (singleton)
+model Settings {
+  id                     String   @id @default("default")
+  
+  // Shipping
+  shippingFlatRateCents  Int      @default(899)
+  
+  // Tax
+  taxEnabled             Boolean  @default(true)
+  taxRate                Float    @default(0.0) // Percentage
+  
+  // Notifications
+  emailOutbidEnabled     Boolean  @default(true)
+  smsOutbidEnabled       Boolean  @default(false)
+  
+  // Media
+  videoEnabled           Boolean  @default(true)
+  videoMaxSeconds        Int      @default(20)
+  videoMaxMB             Int      @default(25)
+  
+  updatedAt              DateTime @updatedAt
+}
+
+// Audit log for admin actions
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  entity     String
+  entityId   String?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt(sort: Desc)])
+}
