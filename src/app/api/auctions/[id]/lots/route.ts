@@ -27,16 +27,27 @@ export async function GET(
       
       return NextResponse.json(lots)
     } catch (dbError) {
-      // Database not available, return mock lots
-      console.log('Database not available, returning mock lots')
-      return NextResponse.json(getMockLots())
+      // Fallback to Supabase
+      console.log('Using Supabase for lots')
+      const { supabaseServer } = await import('@/lib/supabase-server')
+      
+      if (!supabaseServer) {
+        return NextResponse.json([])
+      }
+      
+      const { data: lots } = await supabaseServer
+        .from('Lot')
+        .select('*, _count:Bid(count)')
+        .eq('auctionId', id)
+        .eq('published', true)
+        .order('featured', { ascending: false })
+        .order('sortOrder', { ascending: true })
+      
+      return NextResponse.json(lots || [])
     }
   } catch (error) {
     console.error('Error fetching lots:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch lots' },
-      { status: 500 }
-    )
+    return NextResponse.json([])
   }
 }
 

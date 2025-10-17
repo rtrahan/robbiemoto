@@ -22,8 +22,8 @@ export default async function PastAuctionPage({ params }: PageProps) {
   }
   
   const status = getAuctionStatus(auction)
-  const totalSold = auction.lots.filter(l => l.sold).length
-  const totalSales = auction.lots.reduce((sum, l) => 
+  const totalSold = auction.lots.filter((l: any) => l.sold).length
+  const totalSales = auction.lots.reduce((sum: number, l: any) => 
     sum + (l.sold ? (l.currentBidCents || 0) : 0), 0
   )
   
@@ -94,7 +94,7 @@ export default async function PastAuctionPage({ params }: PageProps) {
           </h2>
           
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {auction.lots.map((lot) => (
+            {auction.lots.map((lot: any) => (
               <Card key={lot.id} className="overflow-hidden">
                 {/* Image */}
                 <div className="aspect-square bg-gray-50 overflow-hidden relative">
@@ -194,8 +194,40 @@ async function getAuctionBySlug(slug: string) {
     
     return auction
   } catch (error) {
-    console.error('Error fetching auction:', error)
-    return null
+    console.log('Prisma error, trying Supabase for auction')
+    
+    try {
+      const { supabaseServer } = await import('@/lib/supabase-server')
+      
+      if (!supabaseServer) {
+        return null
+      }
+      
+      const { data: auction } = await supabaseServer
+        .from('Auction')
+        .select('*, lots:Lot(*)')
+        .eq('slug', slug)
+        .single()
+      
+      if (!auction) {
+        return null
+      }
+      
+      // Filter to published lots and add bid counts
+      return {
+        ...auction,
+        lots: (auction.lots || [])
+          .filter((lot: any) => lot.published)
+          .sort((a: any, b: any) => a.sortOrder - b.sortOrder)
+          .map((lot: any) => ({
+            ...lot,
+            _count: { bids: 0 }, // TODO: Could query bids separately if needed
+          })),
+      }
+    } catch (supabaseError) {
+      console.error('All database connections failed:', supabaseError)
+      return null
+    }
   }
 }
 

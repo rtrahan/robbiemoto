@@ -292,21 +292,77 @@ async function getDashboardData() {
     
     return { auctions: auctionsWithStats, stats }
   } catch (error) {
-    console.log('Database error:', error)
-    return {
-      auctions: getMockAuctions(),
-      stats: {
-        totalAuctions: 2,
-        publishedAuctions: 2,
-        liveAuctions: 0,
-        totalLots: 22,
-        publishedLots: 22,
+    console.log('Prisma error, trying Supabase:', error)
+    
+    // Fallback to Supabase
+    try {
+      const { supabaseServer } = await import('@/lib/supabase-server')
+      
+      if (!supabaseServer) {
+        throw new Error('No database available')
+      }
+      
+      // Get auctions with lots
+      const { data: auctions } = await supabaseServer
+        .from('Auction')
+        .select('*, lots:Lot(*)')
+        .order('startsAt', { ascending: false })
+        .limit(5)
+      
+      if (!auctions) {
+        throw new Error('No data')
+      }
+      
+      // Calculate stats
+      const { count: totalAuctions } = await supabaseServer
+        .from('Auction')
+        .select('*', { count: 'exact', head: true })
+      
+      const { count: totalUsers } = await supabaseServer
+        .from('User')
+        .select('*', { count: 'exact', head: true })
+      
+      const stats = {
+        totalAuctions: totalAuctions || 0,
+        publishedAuctions: auctions.filter((a: any) => a.published).length,
+        liveAuctions: auctions.filter((a: any) => getAuctionStatus(a) === 'LIVE').length,
+        totalLots: auctions.reduce((sum: number, a: any) => sum + (a.lots?.length || 0), 0),
+        publishedLots: auctions.reduce((sum: number, a: any) => 
+          sum + (a.lots?.filter((l: any) => l.published).length || 0), 0),
         totalBids: 0,
         totalCurrentBids: 0,
         activeBids: 0,
-        totalUsers: 0,
+        totalUsers: totalUsers || 0,
         activeBidders: 0,
-      },
+      }
+      
+      const auctionsWithStats = auctions.map((auction: any) => ({
+        ...auction,
+        status: getAuctionStatus(auction),
+        _count: { lots: auction.lots?.length || 0 },
+        totalBids: 0,
+        currentBidTotal: auction.lots?.reduce((sum: number, l: any) => 
+          sum + (l.currentBidCents || 0), 0) || 0,
+      }))
+      
+      return { auctions: auctionsWithStats, stats }
+    } catch (supabaseError) {
+      console.error('Supabase also failed:', supabaseError)
+      return {
+        auctions: [],
+        stats: {
+          totalAuctions: 0,
+          publishedAuctions: 0,
+          liveAuctions: 0,
+          totalLots: 0,
+          publishedLots: 0,
+          totalBids: 0,
+          totalCurrentBids: 0,
+          activeBids: 0,
+          totalUsers: 0,
+          activeBidders: 0,
+        },
+      }
     }
   }
 }

@@ -147,30 +147,63 @@ async function getAuctionsWithLots() {
       include: {
         lots: {
           orderBy: { sortOrder: 'asc' },
-          take: 7, // Show first 6 thumbnails + 1 for count
+          take: 7,
         },
         _count: { select: { lots: true } },
       },
     })
     
-    // Sort to prioritize: LIVE first, then PREVIEW (upcoming), then ENDED
     return auctions.sort((a, b) => {
       const statusA = getAuctionStatus(a)
       const statusB = getAuctionStatus(b)
-      
-      // Priority order: LIVE > PREVIEW > ENDED
       const priority: Record<string, number> = { LIVE: 0, PREVIEW: 1, ENDED: 2 }
       
       if (priority[statusA] !== priority[statusB]) {
         return priority[statusA] - priority[statusB]
       }
       
-      // Within same status, sort by start date (most recent first)
       return new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
     })
   } catch (error) {
-    console.log('Database not available, using mock data')
-    return getMockAuctions()
+    console.log('Prisma error, trying Supabase')
+    
+    try {
+      const { supabaseServer } = await import('@/lib/supabase-server')
+      
+      if (!supabaseServer) {
+        return []
+      }
+      
+      const { data: auctions } = await supabaseServer
+        .from('Auction')
+        .select('*, lots:Lot(*)')
+        .order('startsAt', { ascending: false })
+      
+      if (!auctions) {
+        return []
+      }
+      
+      return auctions
+        .map((auction: any) => ({
+          ...auction,
+          _count: { lots: auction.lots?.length || 0 },
+          lots: auction.lots?.slice(0, 7) || [],
+        }))
+        .sort((a: any, b: any) => {
+          const statusA = getAuctionStatus(a)
+          const statusB = getAuctionStatus(b)
+          const priority: Record<string, number> = { LIVE: 0, PREVIEW: 1, ENDED: 2 }
+          
+          if (priority[statusA] !== priority[statusB]) {
+            return priority[statusA] - priority[statusB]
+          }
+          
+          return new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
+        })
+    } catch (supabaseError) {
+      console.error('All database connections failed:', supabaseError)
+      return []
+    }
   }
 }
 
