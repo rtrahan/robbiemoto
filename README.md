@@ -1,190 +1,257 @@
-# Robbiemoto Auctions
+# 🏺 Robbiemoto Auction Platform
 
-A modern auction platform for handcrafted mugs and leather goods, built with Next.js, TypeScript, and real-time bidding.
+A modern, real-time auction platform for handcrafted ceramics and mugs, built with Next.js 15, Supabase, and OpenAI.
 
-## Features
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Next.js](https://img.shields.io/badge/Next.js-15-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 
-- 🏺 **Monthly Auctions** - Scheduled drops for one-of-a-kind handcrafted items
-- 💳 **Secure Payments** - Stripe integration with auto-charge on winning
-- ⚡ **Real-time Bidding** - Live updates via Pusher
-- 📧 **Email Notifications** - Outbid alerts and order confirmations
-- 🎯 **Proxy Bidding** - Automatic bid increments up to your max
-- ⏱️ **Soft-Close** - 2-minute extensions to prevent sniping
-- 📱 **Responsive Design** - Beautiful on all devices
-- 🔐 **Secure Auth** - Magic link authentication via Clerk
-- 👨‍💼 **Admin Dashboard** - Complete auction management
+## ✨ Features
 
-## Tech Stack
+### 🎨 For Collectors
+- **Real-time bidding** with live updates and bid history
+- **Responsive design** optimized for mobile and desktop
+- **Video & image galleries** with carousel navigation
+- **User profiles** with bid history and preferences
+- **Email notifications** for outbid alerts and auction updates
+- **Secure authentication** via Supabase Auth
 
-- **Framework**: Next.js 14+ with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui
-- **Database**: PostgreSQL (Neon) + Prisma ORM
-- **Authentication**: Clerk
-- **Payments**: Stripe
-- **Real-time**: Pusher
-- **Email**: Resend + React Email
-- **File Uploads**: UploadThing
-- **Background Jobs**: Inngest
-- **Hosting**: Vercel
+### 🛠️ For Admins
+- **AI-powered descriptions** using GPT-4o Vision
+- **Drag & drop** image/video uploads to Supabase Storage
+- **Live auction management** with automatic status detection
+- **Comprehensive dashboard** with real-time metrics
+- **Bid history viewer** to track all bids and bidders
+- **Batch operations** for efficient auction creation
 
-## Getting Started
+### 🚀 Technical Highlights
+- **Real-time updates** with automatic bid refresh
+- **Smart auction states** (Preview → Live → Ended)
+- **Soft close** anti-sniping with time extensions
+- **Reserve prices** with hidden minimums
+- **PostgreSQL** database with Prisma ORM
+- **Serverless API** routes for scalability
 
-### Quick Start (5 minutes)
+## 🛠️ Tech Stack
 
-Run the automated setup script:
+- **Framework**: Next.js 15 (App Router)
+- **Database**: PostgreSQL (via Supabase)
+- **Auth**: Supabase Auth
+- **Storage**: Supabase Storage (images/videos)
+- **AI**: OpenAI GPT-4o (Vision & Text)
+- **ORM**: Prisma
+- **UI**: Tailwind CSS + shadcn/ui
+- **Deployment**: Vercel-ready
+
+## 📋 Prerequisites
+
+- Node.js 18+ and npm
+- Supabase account (free tier works)
+- OpenAI API key (for AI descriptions)
+- PostgreSQL database
+
+## 🚀 Quick Start
+
+### 1. Clone and Install
 
 ```bash
-# Clone the repository
-git clone <your-repo>
-cd robbiemugs
-
-# Run setup script
-./scripts/setup.sh
-
-# Start development server
-npm run dev
-```
-
-Visit [http://localhost:3000](http://localhost:3000) 🎉
-
-The app will run in demo mode with mock data. For full functionality with authentication and real bidding, see [SETUP.md](./SETUP.md).
-
-### What's Included
-
-After running the setup script, you'll have:
-
-✅ **Demo Auctions** - 3 auctions (past, current, upcoming)  
-✅ **Sample Lots** - Realistic handcrafted mug listings  
-✅ **Bid History** - Example bidding activity  
-✅ **Admin Panel** - Full auction management UI at `/admin`  
-✅ **All Pages** - Browse, search, and view all features
-
-### Manual Setup
-
-If you prefer manual setup or need production configuration:
-
-1. **Install dependencies:**
-```bash
+git clone https://github.com/rtrahan/robbiemoto.git
+cd robbiemoto
 npm install
 ```
 
-2. **Copy environment file:**
-```bash
-cp env.example .env.local
+### 2. Environment Setup
+
+Create `.env.local`:
+
+```env
+# Database
+DATABASE_URL="your_supabase_postgres_url"
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your_anon_key"
+
+# OpenAI (for AI descriptions)
+OPENAI_API_KEY="sk-..."
 ```
 
-3. **Set up database** (optional for demo mode):
+### 3. Database Setup
+
 ```bash
-# Add DATABASE_URL to .env.local, then:
-npm run db:push     # Create tables
-npm run db:seed     # Add sample data
+# Push Prisma schema to database
+npx prisma db push
+
+# (Optional) Seed with sample data
+npx prisma db seed
 ```
 
-4. **Start dev server:**
+### 4. Create Admin Account
+
+In Supabase Dashboard → Authentication → Users:
+1. Click "Add user" → "Create new user"
+2. Email: `admin@robbiemoto.com`
+3. Password: Your choice
+4. Auto Confirm User: ✅ Yes
+5. Click "Create user"
+
+Then run this SQL in Supabase SQL Editor:
+
+```sql
+INSERT INTO "User" ("clerkId", "email", "name", "alias", "role")
+VALUES (
+  'PASTE_SUPABASE_USER_ID_HERE',
+  'admin@robbiemoto.com',
+  'Admin',
+  'Admin',
+  'ADMIN'
+);
+```
+
+### 5. Configure Supabase Storage
+
+In Supabase Dashboard → Storage:
+1. Create bucket named `auction-media`
+2. Set to **Public**
+3. Configure CORS (Settings → CORS):
+
+```json
+[
+  {
+    "origin": "*",
+    "methods": ["GET", "HEAD"],
+    "maxAge": 3600
+  }
+]
+```
+
+### 6. Run Development Server
+
 ```bash
 npm run dev
 ```
 
-**For detailed configuration, see [SETUP.md](./SETUP.md)**
+Visit:
+- **Public Auction**: http://localhost:3000
+- **Admin Panel**: http://localhost:3000/admin (login with admin account)
 
-### Admin Access
+## 📚 Key Features
 
-To access the admin panel:
+### Real-Time Bidding
+- Automatic bid refresh every 2 seconds
+- Visual feedback for new bids (yellow flash)
+- Bid history modal with full bidder details
+- Soft close: 2-minute window with 2-minute extensions
 
-1. Go to http://localhost:3000/admin-login
-2. Use demo credentials:
-   - **Email:** `admin@robbiemoto.com`
-   - **Password:** `admin123`
-3. After login, you'll have full access to:
-   - Create and manage auctions
-   - Add and edit lots
-   - View bidding activity
-   - Manage orders
+### AI-Powered Descriptions
+- Upload images → AI generates title, condition, and description
+- Supports multiple images per item
+- Filters out HEIC/unsupported formats
+- Batch generate auction descriptions from all items
 
-The admin session lasts 7 days. Click "Logout" in the admin header to end your session.
+### Admin Dashboard
+- Live auction status (calculated from dates)
+- Total bids and current bid values
+- User registration metrics
+- Recent auctions sorted by priority (Live → Preview → Ended)
 
-## Database Management
+### User Management
+- Supabase Auth for secure authentication
+- Profile editing with name/email updates
+- Bid history tracking
+- Email preference management
 
-```bash
-# Push schema changes
-npm run db:push
-
-# Run migrations
-npm run db:migrate
-
-# Open Prisma Studio
-npm run db:studio
-
-# Seed database (if seed file exists)
-npm run db:seed
-```
-
-## Project Structure
+## 🗂️ Project Structure
 
 ```
-robbiemugs/
-├── src/
-│   ├── app/              # Next.js app router pages
-│   │   ├── admin/        # Admin dashboard
-│   │   ├── account/      # User account pages
-│   │   ├── auction/      # Auction pages
-│   │   ├── lot/          # Individual lot pages
-│   │   └── api/          # API routes
-│   ├── components/       # React components
-│   │   ├── ui/           # shadcn/ui components
-│   │   ├── admin/        # Admin components
-│   │   ├── auction/      # Auction components
-│   │   ├── lot/          # Lot components
-│   │   └── landing/      # Landing page components
-│   ├── lib/              # Utility functions and configs
-│   │   └── inngest/      # Background job functions
-│   └── emails/           # Email templates
+robbiemoto/
 ├── prisma/
-│   └── schema.prisma     # Database schema
-└── public/               # Static assets
+│   └── schema.prisma          # Database schema
+├── src/
+│   ├── app/
+│   │   ├── (auth)/            # Auth pages (login, signup)
+│   │   ├── admin/             # Admin panel
+│   │   ├── api/               # API routes
+│   │   │   ├── admin/         # Admin APIs
+│   │   │   ├── ai/            # AI generation
+│   │   │   ├── bids/          # Bidding system
+│   │   │   └── user/          # User management
+│   │   ├── profile/           # User profile
+│   │   └── page.tsx           # Homepage
+│   ├── components/
+│   │   ├── admin/             # Admin components
+│   │   ├── ui/                # shadcn/ui components
+│   │   └── ...                # Feature components
+│   └── lib/
+│       ├── prisma.ts          # Database client
+│       ├── supabase-auth.ts   # Auth helpers
+│       └── auction-helpers.ts # Auction logic
+└── public/                    # Static assets
 ```
 
-## Auction Configuration
+## 🎯 Usage
 
-Default auction settings (can be modified in admin):
-- **Bid Increment**: $5.00 fixed
-- **Soft-Close Window**: 2 minutes
-- **Soft-Close Extension**: 2 minutes
-- **Shipping**: $8.99 flat rate (US only)
-- **Payment**: Auto-charge on auction close
+### Creating an Auction
 
-## Testing Payments
+1. Go to Admin Dashboard → "New Auction"
+2. Fill in auction details (name, dates, description)
+3. Click "Save Auction"
+4. Add items with photos/videos
+5. Use "Generate with AI" for automatic descriptions
+6. Publish when ready!
 
-Use Stripe test cards:
-- Success: `4242 4242 4242 4242`
-- Decline: `4000 0000 0000 0002`
+### Managing Bids
 
-## Deployment
+- Click "🔨 X bids" badge on any item to see full bid history
+- View bidder names, emails, amounts, and timestamps
+- Leading bid highlighted in green with trophy icon
 
-1. Push to GitHub
-2. Connect to Vercel
+### User Authentication
+
+- Users sign up with name (shown in bid history)
+- Admin users (`admin@robbiemoto.com`) auto-redirect to admin panel
+- Regular users go to auction homepage
+
+## 🔒 Security
+
+- Row Level Security (RLS) on Supabase
+- Server-side authentication with Bearer tokens
+- Admin routes protected by cookie-based auth
+- Environment variables for sensitive keys
+
+## 📦 Deployment
+
+### Vercel (Recommended)
+
+1. Push to GitHub (already done! ✅)
+2. Import in Vercel
 3. Add environment variables
-4. Deploy
+4. Deploy!
 
-## Background Jobs
+### Environment Variables for Production
 
-Inngest functions run automatically to:
-- Check auction start/end times (every minute)
-- Process winning bids and create orders
-- Send email notifications
-- Handle payment processing
+```env
+DATABASE_URL=
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+OPENAI_API_KEY=
+```
 
-Access Inngest dashboard to monitor jobs.
+## 🤝 Contributing
 
-## Support
+This is a personal project, but feedback and suggestions are welcome!
 
-For issues or questions, please open a GitHub issue.
+## 📄 License
 
-## License
+MIT License - feel free to use for your own auction projects!
 
-All rights reserved. This is proprietary software for Robbiemoto.
+## 🙏 Acknowledgments
+
+- Built with [Next.js](https://nextjs.org/)
+- UI components from [shadcn/ui](https://ui.shadcn.com/)
+- Database & Auth by [Supabase](https://supabase.com/)
+- AI by [OpenAI](https://openai.com/)
 
 ---
 
-Built with ❤️ for handcrafted goods
+**Made with ❤️ for handcrafted ceramics** 🏺
