@@ -61,7 +61,8 @@ export function PastAuctionsSection() {
         <div className="space-y-6">
           {displayedAuctions.map((auction) => (
             <Card key={auction.id} className="overflow-hidden hover:shadow-md transition-shadow">
-              <div className="p-6">
+              <a href={`/auctions/${auction.slug}`}>
+                <div className="p-6 cursor-pointer">
                 {/* Auction Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -128,7 +129,16 @@ export function PastAuctionsSection() {
                   <span>💰 {formatCurrency(auction.totalSales || 0)} total sales</span>
                   <span>✓ {auction.itemsSold || 0} sold</span>
                 </div>
+                
+                {/* View Details Link */}
+                <div className="mt-4 pt-4 border-t">
+                  <Button variant="outline" size="sm" className="w-full group">
+                    View All Items & Prices
+                    <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </div>
               </div>
+              </a>
             </Card>
           ))}
         </div>
