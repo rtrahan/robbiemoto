@@ -292,9 +292,7 @@ async function getDashboardData() {
     
     return { auctions: auctionsWithStats, stats }
   } catch (error) {
-    console.log('Prisma error, trying Supabase:', error)
-    
-    // Fallback to Supabase
+    // Fallback to Supabase (silent)
     try {
       const { supabaseServer } = await import('@/lib/supabase-server')
       

@@ -39,8 +39,7 @@ export async function GET() {
       
       return NextResponse.json(pastAuctions)
     } catch (prismaError) {
-      // Fallback to Supabase
-      console.log('Using Supabase for past auctions')
+      // Fallback to Supabase (silent)
       const { supabaseServer } = await import('@/lib/supabase-server')
       
       if (!supabaseServer) {

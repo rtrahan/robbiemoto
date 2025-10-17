@@ -111,8 +111,7 @@ async function getCurrentOrNextAuction() {
       
       return nextAuction ? { ...nextAuction, status: 'preview' as const } : null
     } catch (prismaError) {
-      // Prisma failed - try Supabase direct query
-      console.log('Prisma unavailable, using Supabase client')
+      // Prisma failed - try Supabase direct query (silent)
       const { supabaseServer } = await import('@/lib/supabase-server')
       
       if (!supabaseServer) {

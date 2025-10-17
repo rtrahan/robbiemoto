@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
         newCurrentBid: amountCents,
       })
     } catch (dbError) {
-      console.log('Prisma failed, using Supabase for bid')
+      console.error('Prisma failed for bid, using Supabase fallback')
       
       // Fallback to Supabase
       const { supabaseServer } = await import('@/lib/supabase-server')

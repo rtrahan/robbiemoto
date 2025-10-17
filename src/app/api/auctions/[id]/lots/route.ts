@@ -27,8 +27,7 @@ export async function GET(
       
       return NextResponse.json(lots)
     } catch (dbError) {
-      // Fallback to Supabase
-      console.log('Using Supabase for lots')
+      // Fallback to Supabase (silent - don't spam logs)
       const { supabaseServer } = await import('@/lib/supabase-server')
       
       if (!supabaseServer) {

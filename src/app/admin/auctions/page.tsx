@@ -165,8 +165,7 @@ async function getAuctionsWithLots() {
       return new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
     })
   } catch (error) {
-    console.log('Prisma error, trying Supabase')
-    
+    // Fallback to Supabase (silent)
     try {
       const { supabaseServer } = await import('@/lib/supabase-server')
       
