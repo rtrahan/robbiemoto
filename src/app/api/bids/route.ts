@@ -184,7 +184,6 @@ export async function POST(request: NextRequest) {
           status: 'LEADING',
           isLeading: true,
           placedAt: now,
-          updatedAt: now,
         })
         .select()
         .single()
