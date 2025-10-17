@@ -234,6 +234,10 @@ export const handleLotWon = inngest.createFunction(
       
       // Send winner email
       await step.run('send-winner-email', async () => {
+        if (!resend) {
+          console.log('Resend not configured - skipping winner email')
+          return
+        }
         await resend.emails.send({
           from: FROM_EMAIL,
           to: winner.email,
@@ -287,6 +291,11 @@ export const sendOutbidNotification = inngest.createFunction(
     
     // Send outbid email
     await step.run('send-email', async () => {
+      if (!resend) {
+        console.log('Resend not configured - skipping outbid email')
+        return
+      }
+      
       const timeUntilEnd = new Date(lot.auction.endsAt).getTime() - Date.now()
       const hoursRemaining = Math.floor(timeUntilEnd / (1000 * 60 * 60))
       const minutesRemaining = Math.floor((timeUntilEnd % (1000 * 60 * 60)) / (1000 * 60))

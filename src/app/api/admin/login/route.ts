@@ -25,14 +25,10 @@ export async function POST(request: NextRequest) {
 
     // Check credentials
     if (email === DEMO_ADMIN_EMAIL && password === DEMO_ADMIN_PASSWORD) {
-      // Create response
-      const response = NextResponse.json({
-        success: true,
-        message: 'Login successful',
-      })
+      const cookieStore = await cookies()
       
-      // Set a simple session cookie (in production, use proper JWT)
-      response.cookies.set('admin_session', 'authenticated', {
+      // Set a simple session cookie
+      cookieStore.set('admin_session', 'authenticated', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
@@ -42,7 +38,10 @@ export async function POST(request: NextRequest) {
 
       console.log('Login successful, cookie set for:', email)
       
-      return response
+      return NextResponse.json({
+        success: true,
+        message: 'Login successful',
+      })
     }
 
     // Invalid credentials

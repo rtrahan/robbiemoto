@@ -88,6 +88,11 @@ export async function POST(request: NextRequest) {
 }
 
 async function sendConfirmationEmail(email: string) {
+  if (!resend) {
+    console.log('Resend not configured - skipping confirmation email')
+    return
+  }
+  
   const confirmationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/confirm-email?email=${encodeURIComponent(email)}`
   
   try {
@@ -120,6 +125,6 @@ async function sendConfirmationEmail(email: string) {
     })
   } catch (error) {
     console.error('Failed to send confirmation email:', error)
-    throw error
+    // Don't throw - allow signup to succeed even if email fails
   }
 }
