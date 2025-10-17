@@ -81,53 +81,71 @@ async function getCurrentOrNextAuction() {
   try {
     const now = new Date()
     
-    // Try to get live auction first
-    const liveAuction = await prisma.auction.findFirst({
-      where: {
-        published: true,
-        startsAt: { lte: now },
-        endsAt: { gte: now },
-      },
-      include: {
-        _count: { select: { lots: true } },
-      },
-    })
-    
-    if (liveAuction) {
-      return { ...liveAuction, status: 'live' as const }
+    // Try Prisma first (works on localhost)
+    try {
+      const liveAuction = await prisma.auction.findFirst({
+        where: {
+          published: true,
+          startsAt: { lte: now },
+          endsAt: { gte: now },
+        },
+        include: {
+          _count: { select: { lots: true } },
+        },
+      })
+      
+      if (liveAuction) {
+        return { ...liveAuction, status: 'live' as const }
+      }
+      
+      const nextAuction = await prisma.auction.findFirst({
+        where: {
+          published: true,
+          startsAt: { gt: now },
+        },
+        orderBy: { startsAt: 'asc' },
+        include: {
+          _count: { select: { lots: true } },
+        },
+      })
+      
+      return nextAuction ? { ...nextAuction, status: 'preview' as const } : null
+    } catch (prismaError) {
+      // Prisma failed - try Supabase direct query
+      console.log('Prisma unavailable, using Supabase client')
+      const { supabaseServer } = await import('@/lib/supabase-server')
+      
+      if (!supabaseServer) {
+        throw new Error('No database connection available')
+      }
+      
+      // Try live auction
+      const { data: liveAuction } = await supabaseServer
+        .from('Auction')
+        .select('*, _count:Lot(count)')
+        .eq('published', true)
+        .lte('startsAt', now.toISOString())
+        .gte('endsAt', now.toISOString())
+        .single()
+      
+      if (liveAuction) {
+        return { ...liveAuction, status: 'live' as const }
+      }
+      
+      // Try upcoming
+      const { data: nextAuction } = await supabaseServer
+        .from('Auction')
+        .select('*, _count:Lot(count)')
+        .eq('published', true)
+        .gt('startsAt', now.toISOString())
+        .order('startsAt', { ascending: true })
+        .limit(1)
+        .single()
+      
+      return nextAuction ? { ...nextAuction, status: 'preview' as const } : null
     }
-    
-    // Get next upcoming auction
-    const nextAuction = await prisma.auction.findFirst({
-      where: {
-        published: true,
-        startsAt: { gt: now },
-      },
-      orderBy: { startsAt: 'asc' },
-      include: {
-        _count: { select: { lots: true } },
-      },
-    })
-    
-    return nextAuction ? { ...nextAuction, status: 'preview' as const } : null
   } catch (error) {
-    console.error('❌ DATABASE CONNECTION ERROR:', error)
-    console.error('DATABASE_URL present:', !!process.env.DATABASE_URL)
-    console.error('Error details:', error instanceof Error ? error.message : String(error))
-    
-    // Return mock auction for demo
-    const now = new Date()
-    const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-    return {
-      id: '1',
-      slug: 'spring-collection-2025',
-      name: 'Spring Collection 2025',
-      description: 'Monthly drop of handcrafted ceramic mugs',
-      startsAt: nextWeek,
-      endsAt: new Date(nextWeek.getTime() + 3 * 24 * 60 * 60 * 1000),
-      status: 'preview' as const,
-      published: true,
-      _count: { lots: 12 },
-    }
+    console.error('❌ All database connections failed:', error)
+    return null
   }
 }
