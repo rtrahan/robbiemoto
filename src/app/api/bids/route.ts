@@ -145,63 +145,22 @@ export async function POST(request: NextRequest) {
         )
       }
       
-      // Find user in Supabase
-      let { data: supaUser, error: userError } = await supabaseServer
+      // Find user in Supabase - try multiple ways
+      console.log('Looking for user:', authUser.email)
+      
+      let { data: users } = await supabaseServer
         .from('User')
         .select('*')
         .eq('email', authUser.email)
-        .maybeSingle()
       
-      if (!supaUser && !userError) {
-        // Try to create user
-        console.log('Creating user in Supabase for:', authUser.email)
-        const { data: newUser, error: createError } = await supabaseServer
-          .from('User')
-          .insert({
-            clerkId: authUser.id,
-            email: authUser.email,
-            name: authUser.email.split('@')[0],
-            alias: authUser.email.split('@')[0],
-          })
-          .select()
-          .maybeSingle()
-        
-        if (createError) {
-          console.error('User creation error - Full details:', {
-            code: createError.code,
-            message: createError.message,
-            details: createError.details,
-            hint: createError.hint,
-          })
-          
-          // If user already exists (race condition), try to fetch again
-          if (createError.code === '23505') { // Unique violation
-            const { data: existingUser } = await supabaseServer
-              .from('User')
-              .select('*')
-              .eq('email', authUser.email)
-              .single()
-            
-            supaUser = existingUser
-          } else {
-            // Return detailed error for debugging
-            return NextResponse.json(
-              { 
-                error: 'Database error. RLS might be blocking. Check Vercel logs.',
-                details: createError.message 
-              },
-              { status: 500 }
-            )
-          }
-        } else {
-          supaUser = newUser
-        }
-      }
+      console.log('User query result:', { found: users?.length, email: authUser.email })
+      
+      let supaUser = users?.[0]
       
       if (!supaUser) {
-        console.error('Could not find or create user')
+        console.log('User not found, returning error - user must sign up first')
         return NextResponse.json(
-          { error: 'User not found. Please sign up first.' },
+          { error: 'Please create an account first before bidding. Go to Sign Up.' },
           { status: 404 }
         )
       }
