@@ -58,20 +58,11 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId: clerkId } = await auth()
+    // Check admin authentication
+    const isAdmin = await isAdminAuthenticated()
     
-    if (!clerkId) {
+    if (!isAdmin) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    }
-    
-    // Verify admin role
-    const user = await prisma.user.findUnique({
-      where: { clerkId },
-      select: { role: true },
-    })
-    
-    if (!user || user.role !== 'ADMIN') {
-      return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
     }
     
     const auctions = await prisma.auction.findMany({
