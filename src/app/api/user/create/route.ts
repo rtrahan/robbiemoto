@@ -63,15 +63,29 @@ export async function POST(request: NextRequest) {
         .single()
       
       if (error) {
-        console.error('Supabase user creation error:', error)
-        throw error
+        console.error('❌ Supabase user creation error - FULL DETAILS:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+        })
+        
+        return NextResponse.json(
+          { 
+            error: 'Database insert failed', 
+            details: error.message,
+            code: error.code,
+            hint: error.hint,
+          },
+          { status: 500 }
+        )
       }
 
-      console.log('User created via Supabase:', user.id)
+      console.log('✅ User created via Supabase:', user.id)
       return NextResponse.json({ success: true, user })
     }
   } catch (error: any) {
-    console.error('Error creating user:', error)
+    console.error('❌ Error creating user:', error)
     return NextResponse.json(
       { error: 'Failed to create user', details: error.message },
       { status: 500 }
