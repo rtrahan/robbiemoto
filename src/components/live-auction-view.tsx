@@ -170,6 +170,13 @@ function LotCard({ lot: initialLot }: { lot: any }) {
     checkAuth()
   }, [])
   
+  // Fetch initial bid history if lot has bids
+  useEffect(() => {
+    if (lot._count?.bids > 0) {
+      fetchBidHistory()
+    }
+  }, [lot.id])
+  
   // Auto-refresh current bid every 2 seconds for real-time feel
   useEffect(() => {
     const refreshBid = async () => {
