@@ -49,7 +49,8 @@ export async function POST(request: NextRequest) {
         return `cm${timestamp}${randomStr}`.substring(0, 25)
       }
       
-      // Create new user with generated ID
+      // Create new user with generated ID and timestamps
+      const now = new Date().toISOString()
       const { data: user, error } = await supabaseServer
         .from('User')
         .insert({
@@ -58,6 +59,9 @@ export async function POST(request: NextRequest) {
           email,
           name,
           alias: name,
+          role: 'USER',
+          createdAt: now,
+          updatedAt: now,
         })
         .select()
         .single()
