@@ -256,19 +256,19 @@ function LotCard({ lot: initialLot }: { lot: any }) {
   }, [lot.id, lot.currentBidCents, lot.auctionId])
   
   useEffect(() => {
-    if (showBidHistory && bidHistory.length === 0) {
+    if (showBidModal && bidHistory.length === 0) {
       fetchBidHistory()
     }
     
-    // Auto-refresh bid history every 3 seconds when visible
-    if (showBidHistory) {
+    // Auto-refresh bid history every 3 seconds when modal is open
+    if (showBidModal) {
       const interval = setInterval(() => {
         fetchBidHistory()
       }, 3000) // Refresh every 3 seconds
       
       return () => clearInterval(interval)
     }
-  }, [showBidHistory])
+  }, [showBidModal])
   
   const fetchBidHistory = async () => {
     try {
@@ -325,8 +325,8 @@ function LotCard({ lot: initialLot }: { lot: any }) {
       setBidAmount('')
       toast.success(`Bid placed: ${formatCurrency(amountCents)}!`)
       
-      // Refresh history if open
-      if (showBidHistory) {
+      // Refresh history if modal is open
+      if (showBidModal) {
         fetchBidHistory()
       }
     } catch (error) {
@@ -569,37 +569,116 @@ function LotCard({ lot: initialLot }: { lot: any }) {
           {lot._count?.bids > 0 && (
             <button
               onClick={toggleBidHistory}
-              className="w-full text-xs text-gray-500 hover:text-gray-700 py-2 border-t"
+              className="w-full text-xs text-gray-500 hover:text-gray-700 py-2 border-t hover:bg-gray-50 transition-colors"
             >
-              {showBidHistory ? '▲ Hide' : '▼ Show'} Bid History ({lot._count.bids})
+              📊 View Bid History ({lot._count.bids})
             </button>
           )}
         </div>
-
-        {/* Bid History */}
-        {showBidHistory && (
-          <div className="border-t border-gray-100 p-4 bg-gray-50 space-y-2 max-h-48 overflow-y-auto">
-            {bidHistory.length > 0 ? (
-              bidHistory.map((bid, idx) => (
-                <div key={bid.id} className="flex items-center justify-between text-xs py-1.5 border-b border-gray-100 last:border-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-400">#{bidHistory.length - idx}</span>
-                    <span className="font-medium">{bid.user?.name || bid.user?.alias || 'Anonymous'}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-medium">{formatCurrency(bid.amountCents)}</span>
-                    <span className="text-gray-400">
-                      {new Date(bid.placedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
+      </div>
+      
+      {/* Bid History Modal */}
+      <Dialog open={showBidModal} onOpenChange={setShowBidModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Bid History</DialogTitle>
+            <DialogDescription>
+              {lot.title}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="max-h-[60vh] overflow-y-auto">
+            {/* Item Context */}
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg flex gap-4">
+              {lot.mediaUrls && Array.isArray(lot.mediaUrls) && lot.mediaUrls.length > 0 && (
+                <div className="w-20 h-20 bg-white rounded overflow-hidden flex-shrink-0">
+                  <img 
+                    src={lot.mediaUrls[0]} 
+                    alt={lot.title}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-              ))
+              )}
+              <div className="flex-1">
+                <h3 className="font-semibold mb-1">{lot.title}</h3>
+                <div className="flex gap-4 text-xs text-gray-600">
+                  <div>
+                    <span className="text-muted-foreground">Starting:</span>
+                    <span className="font-medium ml-1">{formatCurrency(lot.startingBidCents)}</span>
+                  </div>
+                  {lot.currentBidCents && (
+                    <div>
+                      <span className="text-muted-foreground">Current:</span>
+                      <span className="font-bold text-green-600 ml-1">{formatCurrency(lot.currentBidCents)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* Bid List */}
+            {bidHistory.length > 0 ? (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-700 mb-3">
+                  {bidHistory.length} {bidHistory.length === 1 ? 'Bid' : 'Bids'} Placed
+                </p>
+                {bidHistory.map((bid, idx) => (
+                  <div 
+                    key={bid.id}
+                    className={`p-3 rounded-lg border ${
+                      idx === 0 
+                        ? 'bg-green-50 border-green-300' 
+                        : 'bg-white border-gray-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className={`text-xs font-bold ${
+                          idx === 0 ? 'text-green-600' : 'text-gray-400'
+                        }`}>
+                          #{bidHistory.length - idx}
+                        </span>
+                        <div>
+                          <p className="font-medium text-sm">
+                            {bid.user?.name || bid.user?.alias || 'Anonymous'}
+                          </p>
+                          {bid.user?.email === currentUser?.email && (
+                            <p className="text-xs text-green-600 font-medium">You</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-lg font-bold ${
+                          idx === 0 ? 'text-green-600' : 'text-gray-900'
+                        }`}>
+                          {formatCurrency(bid.amountCents)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(bid.placedAt).toLocaleString([], { 
+                            month: 'short', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    {idx === 0 && (
+                      <div className="mt-2 pt-2 border-t border-green-200">
+                        <span className="text-xs text-green-700 font-medium">🏆 Leading Bid</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             ) : (
-              <p className="text-xs text-gray-400 text-center py-2">Loading...</p>
+              <div className="text-center py-8 text-muted-foreground">
+                <p>Loading bid history...</p>
+              </div>
             )}
           </div>
-        )}
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
