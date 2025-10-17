@@ -40,9 +40,9 @@ export default async function AdminAuctionsPage() {
             <div className="flex">
               {/* Left - Item Previews */}
               <div className="w-64 bg-gray-50 p-4 border-r flex-shrink-0">
-                {auction.lots && auction.lots.length > 0 ? (
+                {(auction as any).lots && (auction as any).lots.length > 0 ? (
                   <div className="grid grid-cols-3 gap-2">
-                    {auction.lots.slice(0, 6).map((lot: any) => (
+                    {(auction as any).lots.slice(0, 6).map((lot: any) => (
                       <div key={lot.id} className="aspect-square rounded overflow-hidden bg-white border">
                         {lot.mediaUrls && lot.mediaUrls.length > 0 ? (
                           <img 
@@ -57,9 +57,9 @@ export default async function AdminAuctionsPage() {
                         )}
                       </div>
                     ))}
-                    {auction.lots.length > 6 && (
+                    {(auction as any).lots.length > 6 && (
                       <div className="aspect-square rounded bg-gray-200 flex items-center justify-center text-xs text-gray-600">
-                        +{auction.lots.length - 6}
+                        +{(auction as any).lots.length - 6}
                       </div>
                     )}
                   </div>
@@ -87,7 +87,7 @@ export default async function AdminAuctionsPage() {
                     <div className="flex gap-6 text-sm text-muted-foreground">
                       <span>📅 Starts: {formatDateTime(auction.startsAt)}</span>
                       <span>🏁 Ends: {formatDateTime(auction.endsAt)}</span>
-                      <span>📦 {auction.lots?.length || 0} items</span>
+                      <span>📦 {auction._count?.lots || 0} items</span>
                     </div>
                   </div>
                   

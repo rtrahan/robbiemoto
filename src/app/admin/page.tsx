@@ -134,9 +134,9 @@ export default async function AdminDashboard() {
                     </p>
                     <div className="flex gap-4 mt-1 text-xs text-muted-foreground">
                       <span>📦 {auction._count?.lots || 0} items</span>
-                      <span>🔨 {auction.totalBids || 0} bids</span>
-                      {auction.currentBidTotal > 0 && (
-                        <span>💰 {formatCurrency(auction.currentBidTotal)} current</span>
+                      <span>🔨 {(auction as any).totalBids || 0} bids</span>
+                      {(auction as any).currentBidTotal > 0 && (
+                        <span>💰 {formatCurrency((auction as any).currentBidTotal)} current</span>
                       )}
                     </div>
                   </div>

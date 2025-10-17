@@ -284,7 +284,7 @@ export const sendOutbidNotification = inngest.createFunction(
     
     // Send outbid email
     await step.run('send-email', async () => {
-      const timeUntilEnd = lot.auction.endsAt.getTime() - Date.now()
+      const timeUntilEnd = new Date(lot.auction.endsAt).getTime() - Date.now()
       const hoursRemaining = Math.floor(timeUntilEnd / (1000 * 60 * 60))
       const minutesRemaining = Math.floor((timeUntilEnd % (1000 * 60 * 60)) / (1000 * 60))
       
