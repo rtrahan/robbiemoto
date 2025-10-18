@@ -3,7 +3,16 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, name, supabaseId } = await request.json()
+    const { 
+      email, 
+      name, 
+      supabaseId, 
+      shippingAddress,
+      shippingCity,
+      shippingState,
+      shippingZip,
+      emailNotifications 
+    } = await request.json()
     
     console.log('Creating user in database:', { email, name, supabaseId })
     
@@ -15,6 +24,10 @@ export async function POST(request: NextRequest) {
           email,
           name,
           alias: name,
+          shippingAddress,
+          shippingCity,
+          shippingState,
+          shippingZip,
         },
       })
 
@@ -49,7 +62,7 @@ export async function POST(request: NextRequest) {
         return `cm${timestamp}${randomStr}`.substring(0, 25)
       }
       
-      // Create new user with generated ID and timestamps
+      // Create new user with generated ID, timestamps, and shipping info
       const now = new Date().toISOString()
       const { data: user, error } = await supabaseServer
         .from('User')
@@ -60,6 +73,10 @@ export async function POST(request: NextRequest) {
           name,
           alias: name,
           role: 'USER',
+          shippingAddress,
+          shippingCity,
+          shippingState,
+          shippingZip,
           createdAt: now,
           updatedAt: now,
         })

@@ -17,6 +17,11 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
+  const [address, setAddress] = useState('')
+  const [city, setCity] = useState('')
+  const [state, setState] = useState('')
+  const [zipCode, setZipCode] = useState('')
+  const [emailNotifications, setEmailNotifications] = useState(true)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,7 +37,7 @@ export default function LoginPage() {
         
         const { data } = await signUp(email, password)
         
-        // Create user in database with name
+        // Create user in database with name and address
         if (data.user) {
           const userResponse = await fetch('/api/user/create', {
             method: 'POST',
@@ -41,6 +46,11 @@ export default function LoginPage() {
               email,
               name,
               supabaseId: data.user.id,
+              shippingAddress: address,
+              shippingCity: city,
+              shippingState: state,
+              shippingZip: zipCode,
+              emailNotifications,
             }),
           })
           
@@ -100,21 +110,110 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {isSignUp && (
-              <div className="space-y-2">
-                <Label htmlFor="name">Your Name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="John Smith"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  disabled={isLoading}
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  This will be shown in bid history
-                </p>
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Your Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="John Smith"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    disabled={isLoading}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This will be shown in bid history
+                  </p>
+                </div>
+                
+                {/* Shipping Address Section */}
+                <div className="space-y-3 pt-2 border-t">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-xs text-blue-700 font-medium mb-1">
+                      📦 Shipping Information
+                    </p>
+                    <p className="text-xs text-blue-600">
+                      We'll use this to ship items you win. You can update it later in your profile.
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Street Address</Label>
+                    <Input
+                      id="address"
+                      type="text"
+                      placeholder="123 Main St"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      disabled={isLoading}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="city">City</Label>
+                      <Input
+                        id="city"
+                        type="text"
+                        placeholder="San Francisco"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        disabled={isLoading}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="state">State</Label>
+                      <Input
+                        id="state"
+                        type="text"
+                        placeholder="CA"
+                        value={state}
+                        onChange={(e) => setState(e.target.value)}
+                        disabled={isLoading}
+                        required
+                        maxLength={2}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="zipCode">ZIP Code</Label>
+                    <Input
+                      id="zipCode"
+                      type="text"
+                      placeholder="94102"
+                      value={zipCode}
+                      onChange={(e) => setZipCode(e.target.value)}
+                      disabled={isLoading}
+                      required
+                      maxLength={10}
+                    />
+                  </div>
+                </div>
+                
+                {/* Email Notifications */}
+                <div className="flex items-start space-x-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="notifications"
+                    checked={emailNotifications}
+                    onChange={(e) => setEmailNotifications(e.target.checked)}
+                    className="mt-1"
+                  />
+                  <div>
+                    <Label htmlFor="notifications" className="cursor-pointer">
+                      Email me about new auctions and outbid notifications
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      You can change this anytime in your profile
+                    </p>
+                  </div>
+                </div>
+              </>
             )}
             
             <div className="space-y-2">
