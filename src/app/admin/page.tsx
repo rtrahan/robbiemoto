@@ -77,12 +77,12 @@ export default async function AdminDashboard() {
         <Card className="border-l-4 border-l-amber-500">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-1">
-              <p className="text-xs font-medium text-muted-foreground">Current Bids</p>
+              <p className="text-xs font-medium text-muted-foreground">Total Value</p>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </div>
             <div className="text-2xl font-bold">{formatCurrency(stats.totalCurrentBids)}</div>
             <p className="text-[10px] text-muted-foreground mt-0.5">
-              {stats.totalBids} total bids
+              Leading bids only
             </p>
           </CardContent>
         </Card>
