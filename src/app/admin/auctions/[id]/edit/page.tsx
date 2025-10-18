@@ -90,7 +90,7 @@ export default function EditAuctionPage() {
     setIsLoading(true)
     
     try {
-      await fetch(`/api/admin/auctions/${auctionId}`, {
+      const response = await fetch(`/api/admin/auctions/${auctionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -104,9 +104,17 @@ export default function EditAuctionPage() {
         }),
       })
       
-      toast.success('Saved!')
+      if (!response.ok) {
+        throw new Error('Failed to save')
+      }
+      
+      toast.success('Auction saved!')
+      
+      // Refresh the page to show updated dates
+      window.location.reload()
     } catch (error) {
-      toast.error('Failed')
+      toast.error('Failed to save auction')
+      console.error('Save error:', error)
     } finally {
       setIsLoading(false)
     }
