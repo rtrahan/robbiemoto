@@ -114,6 +114,10 @@ export default function ProfilePage() {
           name: formData.name,
           email: formData.email,
           emailChanged,
+          shippingAddress: formData.shippingAddress,
+          shippingCity: formData.shippingCity,
+          shippingState: formData.shippingState,
+          shippingZip: formData.shippingZip,
         }),
       })
       
