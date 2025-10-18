@@ -90,13 +90,18 @@ export default function EditAuctionPage() {
     setIsLoading(true)
     
     try {
+      // Convert datetime-local to ISO without timezone shift
+      // datetime-local gives us "2025-10-17T23:10", we just append ":00.000Z" to treat as UTC
+      const startsAtISO = formData.startsAt + ':00.000Z'
+      const endsAtISO = formData.endsAt + ':00.000Z'
+      
       const response = await fetch(`/api/admin/auctions/${auctionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          startsAt: new Date(formData.startsAt).toISOString(),
-          endsAt: new Date(formData.endsAt).toISOString(),
+          startsAt: startsAtISO,
+          endsAt: endsAtISO,
           softCloseWindowSec: 120,
           softCloseExtendSec: 120,
           fixedIncrementCents: 500,
