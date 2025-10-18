@@ -122,17 +122,23 @@ export async function PATCH(
       published,
     } = body
     
-    console.log('Updating auction with dates:', { startsAt, endsAt, published })
+    console.log('Updating auction - raw input:', { startsAt, endsAt, published })
     
     try {
-      // Parse datetime-local strings to proper Date objects
-      // datetime-local format: "2025-10-17T23:20" (no timezone, browser's local time)
-      const startsAtDate = new Date(startsAt)
-      const endsAtDate = new Date(endsAt)
+      // If startsAt/endsAt are already ISO strings (with Z), use them
+      // If they're datetime-local format (2025-10-17T23:20), browser already sent them
+      const startsAtDate = startsAt.includes('Z') || startsAt.includes('+') 
+        ? new Date(startsAt)
+        : new Date(startsAt) // This will treat as local time and convert to UTC
       
-      console.log('Parsed dates:', {
+      const endsAtDate = endsAt.includes('Z') || endsAt.includes('+')
+        ? new Date(endsAt)
+        : new Date(endsAt)
+      
+      console.log('Saving to database as UTC:', {
         startsAt: startsAtDate.toISOString(),
-        endsAt: endsAtDate.toISOString()
+        endsAt: endsAtDate.toISOString(),
+        localTimeWas: { startsAt, endsAt }
       })
       
       const auction = await prisma.auction.update({
