@@ -21,7 +21,7 @@ export default async function HomePage() {
         <div className="container flex h-16 items-center justify-between px-4 md:px-8">
           <a href="/" className="flex items-center hover:opacity-70 transition-opacity">
             <img 
-              src="/logo.png" 
+              src="/robbiemoto-horizontal.pdf" 
               alt="Robbiemoto" 
               className="h-8 w-auto"
             />
