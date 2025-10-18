@@ -1,27 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getUser } from '@/lib/supabase-auth'
 
 export async function GET(request: NextRequest) {
-  try {
-    const user = await getUser()
+  // Get auth token from header (declare at function scope)
+  const authHeader = request.headers.get('authorization')
+  const token = authHeader?.replace('Bearer ', '')
+  
+  let authUser: any = null
+  
+  if (token) {
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://bdyuqcxtdawxhhdxgkic.supabase.co',
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+    )
     
-    if (!user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
+    const { data } = await supabase.auth.getUser(token)
+    authUser = data?.user
+  }
+  
+  if (!authUser || !authUser.email) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  }
 
+  try {
     // Find or create user in database
     let dbUser = await prisma.user.findUnique({
-      where: { email: user.email! },
+      where: { email: authUser.email },
     })
 
     if (!dbUser) {
       // Create user if doesn't exist
       dbUser = await prisma.user.create({
         data: {
-          clerkId: user.id,
-          email: user.email!,
-          name: user.email!.split('@')[0],
+          clerkId: authUser.id,
+          email: authUser.email,
+          name: authUser.email.split('@')[0],
           alias: 'bidder_' + Math.floor(Math.random() * 1000),
         },
       })
@@ -85,4 +99,3 @@ export async function GET(request: NextRequest) {
     }
   }
 }
-
