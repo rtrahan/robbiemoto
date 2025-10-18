@@ -36,7 +36,6 @@ export default function EditAuctionPage() {
     startsAt: '',
     endsAt: '',
     published: false,
-    timezone: 'America/New_York',
   })
   const [newLot, setNewLot] = useState({
     title: '',
@@ -70,7 +69,6 @@ export default function EditAuctionPage() {
             startsAt: new Date(auction.startsAt).toISOString().slice(0, 16),
             endsAt: new Date(auction.endsAt).toISOString().slice(0, 16),
             published: auction.published,
-            timezone: 'America/New_York', // Default timezone
           })
         }
         
@@ -495,24 +493,8 @@ export default function EditAuctionPage() {
                   value={formData.endsAt}
                   onChange={(e) => setFormData({ ...formData, endsAt: e.target.value })}
                 />
-              </div>
-              
-              <div className="space-y-1.5">
-                <Label className="text-xs">Timezone</Label>
-                <select
-                  value={formData.timezone}
-                  onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                >
-                  <option value="America/New_York">Eastern (ET)</option>
-                  <option value="America/Chicago">Central (CT)</option>
-                  <option value="America/Denver">Mountain (MT)</option>
-                  <option value="America/Los_Angeles">Pacific (PT)</option>
-                  <option value="America/Anchorage">Alaska (AK)</option>
-                  <option value="Pacific/Honolulu">Hawaii (HI)</option>
-                </select>
                 <p className="text-xs text-muted-foreground">
-                  Times are converted to UTC for storage
+                  All times shown in your local timezone
                 </p>
               </div>
 
