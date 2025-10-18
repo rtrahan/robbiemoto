@@ -166,14 +166,62 @@ export async function DELETE(
     const { id } = await params
     
     try {
+      // Delete auction (cascade will delete lots and bids)
       await prisma.auction.delete({
         where: { id },
       })
       
+      console.log('✅ Auction deleted via Prisma:', id)
       return NextResponse.json({ success: true })
     } catch (dbError) {
-      // Database not available - simulate success for demo
-      console.log('Database not available, simulating auction deletion')
+      console.log('Prisma failed, using Supabase to delete auction')
+      
+      const { supabaseServer } = await import('@/lib/supabase-server')
+      
+      if (!supabaseServer) {
+        return NextResponse.json(
+          { error: 'Database not available' },
+          { status: 503 }
+        )
+      }
+      
+      // Delete associated bids first (get lot IDs)
+      const { data: lots } = await supabaseServer
+        .from('Lot')
+        .select('id')
+        .eq('auctionId', id)
+      
+      if (lots && lots.length > 0) {
+        const lotIds = lots.map(l => l.id)
+        
+        // Delete all bids for these lots
+        await supabaseServer
+          .from('Bid')
+          .delete()
+          .in('lotId', lotIds)
+        
+        // Delete all lots
+        await supabaseServer
+          .from('Lot')
+          .delete()
+          .eq('auctionId', id)
+      }
+      
+      // Finally delete auction
+      const { error } = await supabaseServer
+        .from('Auction')
+        .delete()
+        .eq('id', id)
+      
+      if (error) {
+        console.error('Supabase delete error:', error)
+        return NextResponse.json(
+          { error: 'Failed to delete auction' },
+          { status: 500 }
+        )
+      }
+      
+      console.log('✅ Auction deleted via Supabase:', id)
       return NextResponse.json({ success: true })
     }
   } catch (error) {
