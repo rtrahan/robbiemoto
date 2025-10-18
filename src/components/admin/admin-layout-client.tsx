@@ -19,12 +19,14 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         />
       )}
       
-      {/* Sidebar - Mobile Slide-in */}
+      {/* Sidebar - Mobile Slide-in, Fixed Height on Desktop */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 lg:relative lg:transform-none
+        fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 lg:relative lg:transform-none lg:h-screen
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <AdminSidebar onClose={() => setSidebarOpen(false)} />
+        <div className="h-full overflow-hidden">
+          <AdminSidebar onClose={() => setSidebarOpen(false)} />
+        </div>
       </div>
       
       {/* Main Content */}

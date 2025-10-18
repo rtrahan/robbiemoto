@@ -21,8 +21,9 @@ export function AdminSidebar({ onClose }: { onClose?: () => void }) {
   }
   
   return (
-    <div className="flex h-full w-64 flex-col border-r border-gray-100 bg-white shadow-xl lg:shadow-none">
-      <div className="flex h-20 items-center border-b border-gray-100 px-6">
+    <div className="flex h-full w-64 flex-col border-r border-gray-100 bg-white shadow-xl lg:shadow-none overflow-hidden">
+      {/* Logo - Fixed */}
+      <div className="flex h-20 items-center border-b border-gray-100 px-6 flex-shrink-0">
         <Link href="/" className="flex items-center">
           <img 
             src="/robbiemoto-horizontal.pdf" 
@@ -32,7 +33,8 @@ export function AdminSidebar({ onClose }: { onClose?: () => void }) {
         </Link>
       </div>
       
-      <nav className="flex-1 space-y-1 p-6">
+      {/* Navigation - Scrollable */}
+      <nav className="flex-1 space-y-1 p-6 overflow-y-auto">
         {navigation.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href || 
@@ -57,11 +59,12 @@ export function AdminSidebar({ onClose }: { onClose?: () => void }) {
         })}
       </nav>
       
-      <div className="border-t border-gray-100 p-6">
+      {/* Footer - Fixed at Bottom */}
+      <div className="border-t border-gray-100 p-6 flex-shrink-0 bg-white">
         <Link
           href="/"
           onClick={handleLinkClick}
-          className="flex items-center gap-3 px-3 py-2 text-xs font-medium uppercase tracking-wider text-gray-500 transition-colors hover:text-gray-900"
+          className="flex items-center gap-3 px-3 py-2 text-xs font-medium uppercase tracking-wider text-gray-500 transition-colors hover:text-gray-900 rounded hover:bg-gray-50"
         >
           ← Back to Site
         </Link>
