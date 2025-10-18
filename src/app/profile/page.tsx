@@ -24,6 +24,10 @@ export default function ProfilePage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    shippingAddress: '',
+    shippingCity: '',
+    shippingState: '',
+    shippingZip: '',
   })
   
   const [emailPrefs, setEmailPrefs] = useState({
@@ -56,6 +60,10 @@ export default function ProfilePage() {
         setFormData({
           name: dbUserData.name || '',
           email: dbUserData.email || userData.email || '',
+          shippingAddress: dbUserData.shippingAddress || '',
+          shippingCity: dbUserData.shippingCity || '',
+          shippingState: dbUserData.shippingState || '',
+          shippingZip: dbUserData.shippingZip || '',
         })
       }
       
@@ -134,6 +142,10 @@ export default function ProfilePage() {
     setFormData({
       name: dbUser?.name || '',
       email: dbUser?.email || user?.email || '',
+      shippingAddress: dbUser?.shippingAddress || '',
+      shippingCity: dbUser?.shippingCity || '',
+      shippingState: dbUser?.shippingState || '',
+      shippingZip: dbUser?.shippingZip || '',
     })
     setIsEditingInfo(false)
   }
@@ -228,6 +240,67 @@ export default function ProfilePage() {
                     </p>
                   </div>
                   
+                  {/* Shipping Address */}
+                  <div className="space-y-3 pt-3 border-t">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
+                      <p className="text-xs text-blue-700 font-medium">
+                        📦 Shipping address for won items
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="address">Street Address</Label>
+                      <Input
+                        id="address"
+                        type="text"
+                        value={formData.shippingAddress}
+                        onChange={(e) => setFormData({ ...formData, shippingAddress: e.target.value })}
+                        placeholder="123 Main St"
+                        disabled={isSaving}
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="city">City</Label>
+                        <Input
+                          id="city"
+                          type="text"
+                          value={formData.shippingCity}
+                          onChange={(e) => setFormData({ ...formData, shippingCity: e.target.value })}
+                          placeholder="San Francisco"
+                          disabled={isSaving}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="state">State</Label>
+                        <Input
+                          id="state"
+                          type="text"
+                          value={formData.shippingState}
+                          onChange={(e) => setFormData({ ...formData, shippingState: e.target.value })}
+                          placeholder="CA"
+                          disabled={isSaving}
+                          maxLength={2}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="zipCode">ZIP Code</Label>
+                      <Input
+                        id="zipCode"
+                        type="text"
+                        value={formData.shippingZip}
+                        onChange={(e) => setFormData({ ...formData, shippingZip: e.target.value })}
+                        placeholder="94102"
+                        disabled={isSaving}
+                        maxLength={10}
+                      />
+                    </div>
+                  </div>
+                  
                   <div className="flex gap-2">
                     <Button 
                       onClick={savePersonalInfo} 
@@ -265,6 +338,18 @@ export default function ProfilePage() {
                     <div>
                       <Label className="text-xs text-muted-foreground">Email</Label>
                       <p className="text-base">{dbUser?.email || user?.email || 'Not set'}</p>
+                    </div>
+                    
+                    <div className="pt-2 border-t">
+                      <Label className="text-xs text-muted-foreground">Shipping Address</Label>
+                      {dbUser?.shippingAddress ? (
+                        <div className="text-sm mt-1">
+                          <p>{dbUser.shippingAddress}</p>
+                          <p>{dbUser.shippingCity}, {dbUser.shippingState} {dbUser.shippingZip}</p>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-400 italic mt-1">No address on file</p>
+                      )}
                     </div>
                   </div>
                   
