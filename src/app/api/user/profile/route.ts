@@ -18,13 +18,17 @@ export async function GET(request: NextRequest) {
       // Find user in database
       const user = await prisma.user.findUnique({
         where: { email: authUser.email },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          alias: true,
-          createdAt: true,
-        },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        alias: true,
+        shippingAddress: true,
+        shippingCity: true,
+        shippingState: true,
+        shippingZip: true,
+        createdAt: true,
+      },
       })
       
       if (!user) {
@@ -64,7 +68,15 @@ export async function PUT(request: NextRequest) {
       )
     }
     
-    const { name, email, emailChanged } = await request.json()
+    const { 
+      name, 
+      email, 
+      emailChanged,
+      shippingAddress,
+      shippingCity,
+      shippingState,
+      shippingZip,
+    } = await request.json()
     
     if (!name || !name.trim()) {
       return NextResponse.json(
@@ -99,6 +111,10 @@ export async function PUT(request: NextRequest) {
       const updateData: any = {
         name: name.trim(),
         alias: name.trim(), // Also update alias to match
+        shippingAddress,
+        shippingCity,
+        shippingState,
+        shippingZip,
       }
       
       // Only update email in DB if it changed
@@ -114,6 +130,10 @@ export async function PUT(request: NextRequest) {
           email: true,
           name: true,
           alias: true,
+          shippingAddress: true,
+          shippingCity: true,
+          shippingState: true,
+          shippingZip: true,
         },
       })
       
