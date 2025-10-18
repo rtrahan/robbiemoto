@@ -32,9 +32,9 @@ export async function GET() {
         .map(auction => ({
           ...auction,
           totalSales: auction.lots.reduce((sum, lot) => 
-            sum + (lot.sold ? (lot.currentBidCents || 0) : 0), 0
+            sum + (lot.currentBidCents || 0), 0
           ),
-          itemsSold: auction.lots.filter(lot => lot.sold).length,
+          itemsSold: auction.lots.filter(lot => lot.currentBidCents && lot.currentBidCents > 0).length,
         }))
       
       return NextResponse.json(pastAuctions)
@@ -62,8 +62,8 @@ export async function GET() {
           ...auction,
           _count: { lots: auction.lots?.length || 0 },
           totalSales: auction.lots?.reduce((sum: number, lot: any) => 
-            sum + (lot.sold ? (lot.currentBidCents || 0) : 0), 0) || 0,
-          itemsSold: auction.lots?.filter((lot: any) => lot.sold).length || 0,
+            sum + (lot.currentBidCents || 0), 0) || 0,
+          itemsSold: auction.lots?.filter((lot: any) => lot.currentBidCents && lot.currentBidCents > 0).length || 0,
         }))
       
       return NextResponse.json(pastAuctions)
