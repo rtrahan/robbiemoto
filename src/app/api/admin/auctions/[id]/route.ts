@@ -138,6 +138,14 @@ export async function PATCH(
         },
       })
       
+      // Revalidate homepage cache immediately
+      const { revalidatePath } = await import('next/cache')
+      revalidatePath('/')
+      revalidatePath('/admin')
+      revalidatePath('/admin/auctions')
+      
+      console.log('✅ Auction updated and cache revalidated')
+      
       return NextResponse.json(auction)
     } catch (dbError) {
       console.log('Prisma failed, using Supabase to update auction')
@@ -177,7 +185,13 @@ export async function PATCH(
         )
       }
       
-      console.log('✅ Auction updated via Supabase:', id)
+      // Revalidate homepage cache immediately
+      const { revalidatePath } = await import('next/cache')
+      revalidatePath('/')
+      revalidatePath('/admin')
+      revalidatePath('/admin/auctions')
+      
+      console.log('✅ Auction updated via Supabase and cache revalidated:', id)
       return NextResponse.json(auction)
     }
   } catch (error) {
