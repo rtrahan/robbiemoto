@@ -32,12 +32,21 @@ export default async function PastAuctionPage({ params }: PageProps) {
       {/* Header */}
       <header className="border-b border-gray-200 bg-white">
         <div className="container px-4 py-4 md:px-8">
-          <Link href="/">
-            <Button variant="ghost" size="sm" className="mb-2">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
-            </Button>
-          </Link>
+          <div className="flex items-center justify-between mb-3">
+            <a href="/" className="flex items-center hover:opacity-70 transition-opacity">
+              <img 
+                src="/robbiemoto-horizontal.pdf" 
+                alt="Robbiemoto" 
+                className="h-12 w-auto"
+              />
+            </a>
+            <Link href="/">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+            </Link>
+          </div>
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">

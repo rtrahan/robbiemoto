@@ -23,8 +23,12 @@ export function AdminSidebar({ onClose }: { onClose?: () => void }) {
   return (
     <div className="flex h-full w-64 flex-col border-r border-gray-100 bg-white shadow-xl lg:shadow-none">
       <div className="flex h-20 items-center border-b border-gray-100 px-6">
-        <Link href="/admin" className="flex items-center gap-3">
-          <span className="font-serif text-xl font-light text-gray-900">Admin</span>
+        <Link href="/" className="flex items-center">
+          <img 
+            src="/robbiemoto-horizontal.pdf" 
+            alt="Robbiemoto" 
+            className="h-12 w-auto"
+          />
         </Link>
       </div>
       

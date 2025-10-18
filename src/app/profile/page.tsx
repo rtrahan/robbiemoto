@@ -201,20 +201,27 @@ export default function ProfilePage() {
       {/* Header */}
       <header className="bg-white border-b">
         <div className="container px-4 py-4 md:px-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">My Profile</h1>
-              <p className="text-sm text-muted-foreground">{user?.email}</p>
-            </div>
+          <div className="flex items-center justify-between mb-3">
+            <a href="/" className="flex items-center hover:opacity-70 transition-opacity">
+              <img 
+                src="/robbiemoto-horizontal.pdf" 
+                alt="Robbiemoto" 
+                className="h-12 w-auto"
+              />
+            </a>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => router.push('/')}>
+              <Button variant="outline" onClick={() => router.push('/')} size="sm">
                 ← Auction
               </Button>
-              <Button variant="outline" onClick={handleLogout}>
+              <Button variant="outline" onClick={handleLogout} size="sm">
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
             </div>
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">My Profile</h1>
+            <p className="text-sm text-muted-foreground">{user?.email}</p>
           </div>
         </div>
       </header>
