@@ -22,9 +22,10 @@ export default async function AuctionResultsPage({ params }: PageProps) {
   }
   
   const status = getAuctionStatus(auctionData)
-  const totalSold = auctionData.lots.filter((l: any) => l.sold).length
+  // Count items with final bids (regardless of sold flag)
+  const totalSold = auctionData.lots.filter((l: any) => l.currentBidCents && l.currentBidCents > 0).length
   const totalRevenue = auctionData.lots.reduce((sum: number, l: any) => 
-    sum + (l.sold ? (l.currentBidCents || 0) : 0), 0
+    sum + (l.currentBidCents || 0), 0
   )
   const totalBids = auctionData.lots.reduce((sum: number, l: any) => 
     sum + (l._count?.bids || 0), 0
@@ -148,14 +149,14 @@ export default async function AuctionResultsPage({ params }: PageProps) {
                         <p className="text-sm text-gray-600 mb-2">{lot.condition}</p>
                       </div>
                       
-                      {lot.sold ? (
+                      {lot.currentBidCents && lot.currentBidCents > 0 ? (
                         <Badge className="bg-green-100 text-green-700 border-green-300">
                           <Trophy className="h-3 w-3 mr-1" />
-                          Sold
+                          {formatCurrency(lot.currentBidCents)}
                         </Badge>
                       ) : (
                         <Badge variant="outline" className="text-gray-600">
-                          Not Sold
+                          No Bids
                         </Badge>
                       )}
                     </div>
@@ -178,18 +179,24 @@ export default async function AuctionResultsPage({ params }: PageProps) {
                       )}
                     </div>
                     
-                    {/* Winner Info */}
-                    {lot.sold && lot.bids && lot.bids.length > 0 && (
+                    {/* Winner Info - Show if there's a winning bid */}
+                    {lot.currentBidCents && lot.currentBidCents > 0 && lot.bids && lot.bids.length > 0 && (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
                         <div className="flex items-center gap-2 mb-1">
                           <Trophy className="h-4 w-4 text-green-600" />
-                          <p className="text-xs font-semibold text-green-700">WINNER</p>
+                          <p className="text-xs font-semibold text-green-700">WINNING BIDDER</p>
                         </div>
                         <div className="flex items-center gap-3">
                           <User className="h-5 w-5 text-green-600" />
-                          <div>
+                          <div className="flex-1">
                             <p className="font-semibold text-sm">{lot.bids[0].user.name || lot.bids[0].user.alias}</p>
                             <p className="text-xs text-gray-600">{lot.bids[0].user.email}</p>
+                            {lot.bids[0].user.shippingAddress && (
+                              <div className="text-xs text-gray-500 mt-1">
+                                <p>{lot.bids[0].user.shippingAddress}</p>
+                                <p>{lot.bids[0].user.shippingCity}, {lot.bids[0].user.shippingState} {lot.bids[0].user.shippingZip}</p>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -274,6 +281,10 @@ async function getAuctionResults(id: string) {
                     name: true,
                     alias: true,
                     email: true,
+                    shippingAddress: true,
+                    shippingCity: true,
+                    shippingState: true,
+                    shippingZip: true,
                   },
                 },
               },
