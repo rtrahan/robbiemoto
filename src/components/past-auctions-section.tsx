@@ -97,20 +97,17 @@ export function PastAuctionsSection() {
                             </div>
                           )}
                           
-                          {/* Sold Badge */}
-                          {lot.sold && lot.currentBidCents && (
-                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                          {/* Sold Badge - Show if has current bid (met reserve or sold) */}
+                          {lot.currentBidCents && lot.currentBidCents > 0 ? (
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-900/80 to-transparent p-2">
                               <p className="text-xs text-white font-medium text-center">
-                                Sold: {formatCurrency(lot.currentBidCents)}
+                                ${(lot.currentBidCents / 100).toFixed(0)}
                               </p>
                             </div>
-                          )}
-                          
-                          {/* Unsold Badge */}
-                          {!lot.sold && (
+                          ) : (
                             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-800/80 to-transparent p-2">
                               <p className="text-xs text-gray-300 font-medium text-center">
-                                Not sold
+                                No bids
                               </p>
                             </div>
                           )}

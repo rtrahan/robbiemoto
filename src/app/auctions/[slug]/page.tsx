@@ -22,9 +22,10 @@ export default async function PastAuctionPage({ params }: PageProps) {
   }
   
   const status = getAuctionStatus(auction)
-  const totalSold = auction.lots.filter((l: any) => l.sold).length
+  // Count items with bids as "sold" instead of relying on sold field
+  const totalSold = auction.lots.filter((l: any) => l.currentBidCents && l.currentBidCents > 0).length
   const totalSales = auction.lots.reduce((sum: number, l: any) => 
-    sum + (l.sold ? (l.currentBidCents || 0) : 0), 0
+    sum + (l.currentBidCents || 0), 0
   )
   
   return (
@@ -119,14 +120,14 @@ export default async function PastAuctionPage({ params }: PageProps) {
                     </div>
                   )}
                   
-                  {/* Status Badge */}
-                  {lot.sold ? (
+                  {/* Status Badge - Based on whether there was a winning bid */}
+                  {lot.currentBidCents && lot.currentBidCents > 0 ? (
                     <div className="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded text-xs font-semibold shadow-md">
-                      ✓ Sold
+                      ${(lot.currentBidCents / 100).toFixed(0)}
                     </div>
                   ) : (
                     <div className="absolute top-2 right-2 bg-gray-600 text-white px-2 py-1 rounded text-xs font-semibold shadow-md">
-                      Not Sold
+                      No Bids
                     </div>
                   )}
                 </div>
@@ -155,18 +156,18 @@ export default async function PastAuctionPage({ params }: PageProps) {
                       <span className="font-medium">{formatCurrency(lot.startingBidCents)}</span>
                     </div>
                     
-                    {lot.sold && lot.currentBidCents && (
+                    {lot.currentBidCents && lot.currentBidCents > 0 && (
                       <div className="flex justify-between">
-                        <span className="text-sm font-medium text-gray-900">Sold For</span>
+                        <span className="text-sm font-medium text-gray-900">Final Bid</span>
                         <span className="text-lg font-bold text-green-600">
                           {formatCurrency(lot.currentBidCents)}
                         </span>
                       </div>
                     )}
                     
-                    {!lot.sold && (
+                    {(!lot.currentBidCents || lot.currentBidCents === 0) && (
                       <div className="text-center py-2">
-                        <p className="text-xs text-gray-400">Did not meet reserve</p>
+                        <p className="text-xs text-gray-400">No bids placed</p>
                       </div>
                     )}
                     
