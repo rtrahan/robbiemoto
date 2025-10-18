@@ -340,15 +340,20 @@ export default function ProfilePage() {
                       <p className="text-base">{dbUser?.email || user?.email || 'Not set'}</p>
                     </div>
                     
-                    <div className="pt-2 border-t">
-                      <Label className="text-xs text-muted-foreground">Shipping Address</Label>
+                    <div className="pt-3 border-t space-y-2">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-2">
+                        <p className="text-xs text-blue-700 font-medium">
+                          📦 Shipping Address
+                        </p>
+                      </div>
+                      
                       {dbUser?.shippingAddress ? (
-                        <div className="text-sm mt-1">
-                          <p>{dbUser.shippingAddress}</p>
+                        <div className="text-sm space-y-1">
+                          <p className="font-medium">{dbUser.shippingAddress}</p>
                           <p>{dbUser.shippingCity}, {dbUser.shippingState} {dbUser.shippingZip}</p>
                         </div>
                       ) : (
-                        <p className="text-sm text-gray-400 italic mt-1">No address on file</p>
+                        <p className="text-sm text-gray-400 italic">No shipping address on file</p>
                       )}
                     </div>
                   </div>
