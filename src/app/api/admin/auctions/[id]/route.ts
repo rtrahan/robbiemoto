@@ -140,13 +140,45 @@ export async function PATCH(
       
       return NextResponse.json(auction)
     } catch (dbError) {
-      // Database not available - simulate success for demo
-      console.log('Database not available, simulating auction update')
-      return NextResponse.json({
-        id,
-        ...body,
-        updatedAt: new Date(),
-      })
+      console.log('Prisma failed, using Supabase to update auction')
+      
+      const { supabaseServer } = await import('@/lib/supabase-server')
+      
+      if (!supabaseServer) {
+        return NextResponse.json(
+          { error: 'Database not available' },
+          { status: 503 }
+        )
+      }
+      
+      const { data: auction, error } = await supabaseServer
+        .from('Auction')
+        .update({
+          name,
+          description,
+          startsAt: new Date(startsAt).toISOString(),
+          endsAt: new Date(endsAt).toISOString(),
+          softCloseWindowSec,
+          softCloseExtendSec,
+          fixedIncrementCents,
+          featured,
+          published,
+          updatedAt: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('Supabase update error:', error)
+        return NextResponse.json(
+          { error: 'Failed to update auction' },
+          { status: 500 }
+        )
+      }
+      
+      console.log('✅ Auction updated via Supabase:', id)
+      return NextResponse.json(auction)
     }
   } catch (error) {
     console.error('Error updating auction:', error)
