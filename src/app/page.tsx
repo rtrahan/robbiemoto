@@ -11,6 +11,9 @@ export const metadata = {
   description: 'Monthly auctions for one-of-a-kind handcrafted mugs and ceramics',
 }
 
+// Revalidate every 60 seconds to pick up admin changes
+export const revalidate = 60
+
 export default async function HomePage() {
   const auction = await getCurrentOrNextAuction()
   
