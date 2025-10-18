@@ -23,7 +23,7 @@ export default async function HomePage() {
             <img 
               src="/robbiemoto-horizontal.pdf" 
               alt="Robbiemoto" 
-              className="h-8 w-auto"
+              className="h-16 w-auto"
             />
           </a>
           <AuthHeader />
