@@ -76,8 +76,12 @@ export default function ProfilePage() {
         })
       }
       
-      // Load user's bids
-      const bidsResponse = await fetch('/api/user/bids')
+      // Load user's bids with auth token
+      const bidsResponse = await fetch('/api/user/bids', {
+        headers: {
+          'Authorization': `Bearer ${token || ''}`,
+        },
+      })
       if (bidsResponse.ok) {
         const bidsData = await bidsResponse.json()
         setBids(bidsData)
