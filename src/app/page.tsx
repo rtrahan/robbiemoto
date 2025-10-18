@@ -98,9 +98,11 @@ export default async function HomePage() {
 async function getCurrentOrNextAuction() {
   try {
     const now = new Date()
+    console.log('Looking for auctions at:', now.toISOString())
     
     // Try Prisma first (works on localhost)
     try {
+      // First, try to find a live auction
       const liveAuction = await prisma.auction.findFirst({
         where: {
           published: true,
@@ -113,9 +115,11 @@ async function getCurrentOrNextAuction() {
       })
       
       if (liveAuction) {
+        console.log('Found LIVE auction:', liveAuction.name)
         return { ...liveAuction, status: 'live' as const }
       }
       
+      // If no live auction, look for upcoming
       const nextAuction = await prisma.auction.findFirst({
         where: {
           published: true,
@@ -126,6 +130,12 @@ async function getCurrentOrNextAuction() {
           _count: { select: { lots: true } },
         },
       })
+      
+      if (nextAuction) {
+        console.log('Found UPCOMING auction:', nextAuction.name, 'starts at:', nextAuction.startsAt)
+      } else {
+        console.log('No published auctions found')
+      }
       
       return nextAuction ? { ...nextAuction, status: 'preview' as const } : null
     } catch (prismaError) {
