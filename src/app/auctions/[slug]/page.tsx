@@ -37,7 +37,7 @@ export default async function PastAuctionPage({ params }: PageProps) {
               <img 
                 src="/robbiemoto-horizontal.pdf" 
                 alt="Robbiemoto" 
-                className="h-12 w-auto"
+                className="h-[84px] w-auto"
               />
             </a>
             <Link href="/">

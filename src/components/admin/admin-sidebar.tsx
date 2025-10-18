@@ -23,12 +23,12 @@ export function AdminSidebar({ onClose }: { onClose?: () => void }) {
   return (
     <div className="flex h-full w-64 flex-col border-r border-gray-100 bg-white shadow-xl lg:shadow-none overflow-hidden">
       {/* Logo - Fixed */}
-      <div className="flex h-20 items-center border-b border-gray-100 px-6 flex-shrink-0">
+      <div className="flex h-28 items-center border-b border-gray-100 px-6 flex-shrink-0">
         <Link href="/" className="flex items-center">
           <img 
             src="/robbiemoto-horizontal.pdf" 
             alt="Robbiemoto" 
-            className="h-12 w-auto"
+            className="h-[84px] w-auto"
           />
         </Link>
       </div>

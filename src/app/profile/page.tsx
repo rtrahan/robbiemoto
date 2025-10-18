@@ -206,7 +206,7 @@ export default function ProfilePage() {
               <img 
                 src="/robbiemoto-horizontal.pdf" 
                 alt="Robbiemoto" 
-                className="h-12 w-auto"
+                className="h-[84px] w-auto"
               />
             </a>
             <div className="flex gap-2">
