@@ -122,14 +122,26 @@ export async function PATCH(
       published,
     } = body
     
+    console.log('Updating auction with dates:', { startsAt, endsAt, published })
+    
     try {
+      // Parse datetime-local strings to proper Date objects
+      // datetime-local format: "2025-10-17T23:20" (no timezone, browser's local time)
+      const startsAtDate = new Date(startsAt)
+      const endsAtDate = new Date(endsAt)
+      
+      console.log('Parsed dates:', {
+        startsAt: startsAtDate.toISOString(),
+        endsAt: endsAtDate.toISOString()
+      })
+      
       const auction = await prisma.auction.update({
         where: { id },
         data: {
           name,
           description,
-          startsAt: new Date(startsAt),
-          endsAt: new Date(endsAt),
+          startsAt: startsAtDate,
+          endsAt: endsAtDate,
           softCloseWindowSec,
           softCloseExtendSec,
           fixedIncrementCents,

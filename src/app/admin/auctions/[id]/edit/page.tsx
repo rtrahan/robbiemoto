@@ -102,20 +102,24 @@ export default function EditAuctionPage() {
   }, [auctionId])
   
   const handleSubmit = async () => {
+    if (!formData.startsAt || !formData.endsAt) {
+      toast.error('Start and end dates are required')
+      return
+    }
+    
     setIsLoading(true)
     
     try {
-      // Convert datetime-local (local time) to UTC ISO string properly
-      const startsAtUTC = new Date(formData.startsAt).toISOString()
-      const endsAtUTC = new Date(formData.endsAt).toISOString()
-      
+      // Send the ISO strings directly - they're already in the right format
       const response = await fetch(`/api/admin/auctions/${auctionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
-          startsAt: startsAtUTC,
-          endsAt: endsAtUTC,
+          name: formData.name,
+          description: formData.description,
+          startsAt: formData.startsAt, // Keep as-is, backend will parse
+          endsAt: formData.endsAt, // Keep as-is, backend will parse
+          published: formData.published,
           softCloseWindowSec: 120,
           softCloseExtendSec: 120,
           fixedIncrementCents: 500,
