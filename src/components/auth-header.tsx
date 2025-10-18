@@ -54,7 +54,8 @@ export function AuthHeader() {
 
   if (user) {
     // Check if user is admin
-    const isAdmin = user.email?.toLowerCase() === 'admin@robbiemoto.com'
+    const adminEmails = ['admin@robbiemoto.com', 'robbiemoto@gmail.com']
+    const isAdmin = adminEmails.includes(user.email?.toLowerCase() || '')
     
     // User is logged in - show profile menu
     return (

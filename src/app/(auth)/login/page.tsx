@@ -62,7 +62,8 @@ export default function LoginPage() {
         await signIn(email, password)
         
         // Check if admin and set admin session
-        if (email.toLowerCase() === 'admin@robbiemoto.com') {
+        const adminEmails = ['admin@robbiemoto.com', 'robbiemoto@gmail.com']
+        if (adminEmails.includes(email.toLowerCase())) {
           // Set admin cookie
           await fetch('/api/auth/admin-check', {
             method: 'POST',
