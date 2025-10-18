@@ -18,23 +18,23 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">
             Manage your monthly ceramic auctions
           </p>
         </div>
         <Link href="/admin/auctions/new">
-          <Button size="lg">
-            <Plus className="mr-2 h-5 w-5" />
+          <Button size="lg" className="w-full sm:w-auto">
+            <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
             New Auction
           </Button>
         </Link>
       </div>
 
-      {/* Quick Stats - Compact Grid */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
+      {/* Quick Stats - Mobile Responsive Grid */}
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
         <Card className="border-l-4 border-l-blue-500">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-1">

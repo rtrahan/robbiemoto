@@ -37,9 +37,9 @@ export default async function AdminAuctionsPage() {
           const actualStatus = getAuctionStatus(auction)
           return (
           <Card key={auction.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="flex">
+            <div className="flex flex-col sm:flex-row">
               {/* Left - Item Previews */}
-              <div className="w-64 bg-gray-50 p-4 border-r flex-shrink-0">
+              <div className="w-full sm:w-64 bg-gray-50 p-4 sm:border-r flex-shrink-0">
                 {(auction as any).lots && (auction as any).lots.length > 0 ? (
                   <div className="grid grid-cols-3 gap-2">
                     {(auction as any).lots.slice(0, 6).map((lot: any) => (
@@ -71,7 +71,7 @@ export default async function AdminAuctionsPage() {
               </div>
 
               {/* Right - Auction Details */}
-              <div className="flex-1 p-6">
+              <div className="flex-1 p-4 sm:p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
