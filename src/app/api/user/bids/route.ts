@@ -50,12 +50,39 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json(bids)
-  } catch (error) {
-    console.error('Error fetching user bids:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch bids' },
-      { status: 500 }
-    )
+  } catch (prismaError) {
+    console.log('Prisma failed, using Supabase for user bids')
+    
+    try {
+      const { supabaseServer } = await import('@/lib/supabase-server')
+      
+      if (!supabaseServer || !authUser?.email) {
+        return NextResponse.json([], { status: 200 })
+      }
+      
+      // Get user
+      const { data: user } = await supabaseServer
+        .from('User')
+        .select('id')
+        .eq('email', authUser.email)
+        .single()
+      
+      if (!user) {
+        return NextResponse.json([], { status: 200 })
+      }
+      
+      // Get bids
+      const { data: bids } = await supabaseServer
+        .from('Bid')
+        .select('*, lot:Lot(id, title, slug, mediaUrls, auction:Auction(name, slug))')
+        .eq('userId', user.id)
+        .order('placedAt', { ascending: false })
+      
+      return NextResponse.json(bids || [])
+    } catch (supabaseError) {
+      console.error('Error fetching user bids:', supabaseError)
+      return NextResponse.json([], { status: 200 })
+    }
   }
 }
 

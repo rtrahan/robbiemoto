@@ -53,11 +53,31 @@ export async function GET(request: NextRequest) {
       
       return NextResponse.json(user)
     } catch (dbError) {
-      console.log('Database not available')
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 503 }
-      )
+      console.log('Prisma failed, using Supabase for profile')
+      
+      const { supabaseServer } = await import('@/lib/supabase-server')
+      
+      if (!supabaseServer) {
+        return NextResponse.json(
+          { error: 'Database not available' },
+          { status: 503 }
+        )
+      }
+      
+      const { data: user } = await supabaseServer
+        .from('User')
+        .select('id, email, name, alias, shippingAddress, shippingCity, shippingState, shippingZip, createdAt')
+        .eq('email', authUser.email)
+        .single()
+      
+      if (!user) {
+        return NextResponse.json(
+          { error: 'User not found' },
+          { status: 404 }
+        )
+      }
+      
+      return NextResponse.json(user)
     }
   } catch (error) {
     console.error('Error fetching profile:', error)
