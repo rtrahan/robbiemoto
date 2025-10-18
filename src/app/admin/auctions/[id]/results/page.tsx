@@ -43,9 +43,15 @@ export default async function AuctionResultsPage({ params }: PageProps) {
           <div>
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-2xl font-bold">{auctionData.name}</h1>
-              <Badge variant={status === 'ENDED' ? 'outline' : 'default'}>
-                {status}
-              </Badge>
+              {status === 'LIVE' ? (
+                <Badge className="bg-green-100 text-green-700 border-green-300">
+                  🔴 {status}
+                </Badge>
+              ) : status === 'ENDED' ? (
+                <Badge variant="outline">{status}</Badge>
+              ) : (
+                <Badge className="bg-blue-100 text-blue-700 border-blue-300">{status}</Badge>
+              )}
             </div>
             <p className="text-sm text-muted-foreground">
               {formatDateTime(auctionData.startsAt)} → {formatDateTime(auctionData.endsAt)}
@@ -66,6 +72,17 @@ export default async function AuctionResultsPage({ params }: PageProps) {
         </div>
       </div>
 
+      {/* Live Status Alert */}
+      {status === 'LIVE' && (
+        <Card className="bg-blue-50 border-blue-200">
+          <div className="p-4">
+            <p className="text-sm text-blue-700 font-medium">
+              🔴 Auction is currently live - Results update in real-time
+            </p>
+          </div>
+        </Card>
+      )}
+      
       {/* Summary Stats */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
