@@ -63,11 +63,26 @@ export default function EditAuctionPage() {
         
         if (auctionRes.ok) {
           const auction = await auctionRes.json()
+          
+          // Convert UTC dates to local datetime-local format
+          const startDate = new Date(auction.startsAt)
+          const endDate = new Date(auction.endsAt)
+          
+          // Format for datetime-local: YYYY-MM-DDTHH:MM (in local timezone)
+          const formatForInput = (date: Date) => {
+            const year = date.getFullYear()
+            const month = String(date.getMonth() + 1).padStart(2, '0')
+            const day = String(date.getDate()).padStart(2, '0')
+            const hours = String(date.getHours()).padStart(2, '0')
+            const minutes = String(date.getMinutes()).padStart(2, '0')
+            return `${year}-${month}-${day}T${hours}:${minutes}`
+          }
+          
           setFormData({
             name: auction.name,
             description: auction.description || '',
-            startsAt: new Date(auction.startsAt).toISOString().slice(0, 16),
-            endsAt: new Date(auction.endsAt).toISOString().slice(0, 16),
+            startsAt: formatForInput(startDate),
+            endsAt: formatForInput(endDate),
             published: auction.published,
           })
         }
@@ -90,18 +105,17 @@ export default function EditAuctionPage() {
     setIsLoading(true)
     
     try {
-      // Convert datetime-local to ISO without timezone shift
-      // datetime-local gives us "2025-10-17T23:10", we just append ":00.000Z" to treat as UTC
-      const startsAtISO = formData.startsAt + ':00.000Z'
-      const endsAtISO = formData.endsAt + ':00.000Z'
+      // Convert datetime-local (local time) to UTC ISO string properly
+      const startsAtUTC = new Date(formData.startsAt).toISOString()
+      const endsAtUTC = new Date(formData.endsAt).toISOString()
       
       const response = await fetch(`/api/admin/auctions/${auctionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          startsAt: startsAtISO,
-          endsAt: endsAtISO,
+          startsAt: startsAtUTC,
+          endsAt: endsAtUTC,
           softCloseWindowSec: 120,
           softCloseExtendSec: 120,
           fixedIncrementCents: 500,

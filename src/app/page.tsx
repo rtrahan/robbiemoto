@@ -60,7 +60,6 @@ export default async function HomePage() {
           // NO AUCTION - Show Instagram follow CTA
           <div className="min-h-[80vh] flex items-center justify-center">
             <div className="text-center max-w-2xl px-4">
-              <div className="text-6xl mb-6">🏺</div>
               <h2 className="text-4xl font-serif font-light mb-4 text-gray-900">
                 No Auction Scheduled
               </h2>
