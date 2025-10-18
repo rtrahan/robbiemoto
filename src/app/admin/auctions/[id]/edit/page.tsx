@@ -427,9 +427,9 @@ export default function EditAuctionPage() {
   }
   
   return (
-    <div className="min-h-screen lg:h-[calc(100vh-5rem)]">
-      {/* Top Bar */}
-      <div className="flex items-center gap-2 sm:gap-3 mb-4">
+    <div className="h-full flex flex-col">
+      {/* Top Bar - Fixed */}
+      <div className="flex items-center gap-2 sm:gap-3 mb-4 flex-shrink-0">
         <Link href="/admin/auctions">
           <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
             <ArrowLeft className="h-4 w-4" />
@@ -442,9 +442,9 @@ export default function EditAuctionPage() {
       </div>
 
       {/* Responsive Layout: Stack on Mobile, Side-by-Side on Desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 lg:h-[calc(100%-4rem)]">
-        {/* LEFT COLUMN - Auction Details */}
-        <div className="space-y-4 lg:overflow-y-auto lg:pr-2">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-4 lg:gap-6 overflow-hidden">
+        {/* LEFT COLUMN - Auction Details - Fixed/Scrollable */}
+        <div className="lg:overflow-y-auto lg:h-full space-y-4 lg:pr-2">
           <Card className="p-5">
             <h2 className="font-semibold mb-4 text-sm">Auction Details</h2>
             
@@ -535,10 +535,10 @@ export default function EditAuctionPage() {
           </Card>
         </div>
 
-        {/* RIGHT COLUMN - Items Grid */}
-        <div className="flex flex-col lg:h-full">
-          {/* Items Header */}
-          <div className="flex items-center justify-between mb-4 gap-2">
+        {/* RIGHT COLUMN - Items Grid - Scrollable */}
+        <div className="flex flex-col lg:overflow-hidden lg:h-full">
+          {/* Items Header - Fixed */}
+          <div className="flex items-center justify-between mb-3 gap-2 flex-shrink-0">
             <h2 className="font-semibold text-sm sm:text-base">{lots.length} {lots.length === 1 ? 'Item' : 'Items'}</h2>
             <Button onClick={handleNewLot} size="sm" className="text-xs">
               <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Add Item
@@ -679,10 +679,10 @@ export default function EditAuctionPage() {
             </Card>
           )}
 
-          {/* Items Grid - Scrollable */}
-          <div className="flex-1 lg:overflow-y-auto">
+          {/* Items Grid - Scrollable Area */}
+          <div className="flex-1 overflow-y-auto">
             {lots.length > 0 ? (
-              <div className="grid gap-3 grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 pb-4">
+              <div className="grid gap-3 grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 pb-4 pr-1">
                 {lots.map((lot, index) => (
                   <Card key={lot.id} className="group relative overflow-hidden hover:shadow-md transition-all cursor-pointer" onClick={() => handleEditLot(lot)}>
                     {false ? (
