@@ -6,7 +6,8 @@ export async function POST(request: NextRequest) {
     const { email } = await request.json()
     
     // If admin email, set admin cookie
-    if (email?.toLowerCase() === 'admin@robbiemoto.com') {
+    const adminEmails = ['admin@robbiemoto.com', 'robbiemoto@gmail.com']
+    if (adminEmails.includes(email?.toLowerCase())) {
       const cookieStore = await cookies()
       
       cookieStore.set('admin_session', 'authenticated', {
