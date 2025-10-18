@@ -52,8 +52,17 @@ export default function ProfilePage() {
       
       setUser(userData)
       
-      // Load database user info
-      const userResponse = await fetch('/api/user/profile')
+      // Get auth token
+      const { supabase } = await import('@/lib/supabase-auth')
+      const session = await supabase?.auth.getSession()
+      const token = session?.data?.session?.access_token
+      
+      // Load database user info with auth token
+      const userResponse = await fetch('/api/user/profile', {
+        headers: {
+          'Authorization': `Bearer ${token || ''}`,
+        },
+      })
       if (userResponse.ok) {
         const dbUserData = await userResponse.json()
         setDbUser(dbUserData)
@@ -107,9 +116,17 @@ export default function ProfilePage() {
     try {
       const emailChanged = formData.email !== user?.email
       
+      // Get auth token
+      const { supabase } = await import('@/lib/supabase-auth')
+      const session = await supabase?.auth.getSession()
+      const token = session?.data?.session?.access_token
+      
       const response = await fetch('/api/user/profile', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token || ''}`,
+        },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,

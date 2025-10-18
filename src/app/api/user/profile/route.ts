@@ -3,9 +3,22 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
-    // Get authenticated user
-    const { getUser } = await import('@/lib/supabase-auth')
-    const authUser = await getUser()
+    // Get auth token from header
+    const authHeader = request.headers.get('authorization')
+    const token = authHeader?.replace('Bearer ', '')
+    
+    let authUser = null
+    
+    if (token) {
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://bdyuqcxtdawxhhdxgkic.supabase.co',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      )
+      
+      const { data } = await supabase.auth.getUser(token)
+      authUser = data?.user
+    }
     
     if (!authUser || !authUser.email) {
       return NextResponse.json(
@@ -57,9 +70,23 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    // Get authenticated user
-    const { getUser, supabase } = await import('@/lib/supabase-auth')
-    const authUser = await getUser()
+    // Get auth token from header
+    const authHeader = request.headers.get('authorization')
+    const token = authHeader?.replace('Bearer ', '')
+    
+    let authUser = null
+    let supabase = null
+    
+    if (token) {
+      const { createClient } = await import('@supabase/supabase-js')
+      supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://bdyuqcxtdawxhhdxgkic.supabase.co',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      )
+      
+      const { data } = await supabase.auth.getUser(token)
+      authUser = data?.user
+    }
     
     if (!authUser || !authUser.email) {
       return NextResponse.json(
