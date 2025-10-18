@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { formatDateTime } from '@/lib/helpers'
 import { getAuctionStatus } from '@/lib/auction-helpers'
 import Link from 'next/link'
-import { Plus, Edit, Trash2 } from 'lucide-react'
+import { Plus, Edit, Trash2, Trophy } from 'lucide-react'
 
 export const metadata = {
   title: 'Manage Auctions',
@@ -92,6 +92,14 @@ export default async function AdminAuctionsPage() {
                   </div>
                   
                   <div className="flex gap-2">
+                    {actualStatus === 'ENDED' && (
+                      <Link href={`/admin/auctions/${auction.id}/results`}>
+                        <Button variant="outline" size="sm" className="text-green-600 border-green-300 hover:bg-green-50">
+                          <Trophy className="h-4 w-4 mr-2" />
+                          Results
+                        </Button>
+                      </Link>
+                    )}
                     <Link href={`/admin/auctions/${auction.id}/edit`}>
                       <Button variant="outline" size="sm">
                         <Edit className="h-4 w-4 mr-2" />
