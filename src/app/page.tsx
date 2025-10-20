@@ -38,7 +38,9 @@ export default async function HomePage() {
         <div className="fixed top-16 z-40 w-full bg-gradient-to-r from-gray-900 to-gray-800 border-b border-gray-700 shadow-lg">
           <div className="w-full px-4 py-2 md:py-3">
             <div className="flex items-center justify-center gap-2 md:gap-6">
-              <div className="text-[10px] md:text-xs uppercase tracking-wider text-gray-400 whitespace-nowrap">Ends In</div>
+              <div className="text-[10px] md:text-xs uppercase tracking-wider text-gray-400 whitespace-nowrap">
+                🔴 Ends In
+              </div>
               <LiveCountdown endsAt={auction.endsAt} />
               <div className="text-[10px] md:text-xs text-gray-400 hidden lg:block truncate max-w-xs">{auction.name}</div>
             </div>

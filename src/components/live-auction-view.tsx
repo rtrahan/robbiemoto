@@ -502,11 +502,7 @@ function LotCard({ lot: initialLot }: { lot: any }) {
             </p>
           )}
           
-          {lot.reserveMet && (
-            <span className="inline-block mt-2 border border-green-600 bg-green-50 text-green-700 px-2 py-1 text-[10px] uppercase tracking-wider font-medium">
-              ✓ Reserve Met
-            </span>
-          )}
+          {/* Item-specific countdown for extended bidding removed reserve met indicator */}
           
           {newBidFlash && (
             <div className="text-xs text-yellow-700 font-medium mt-2 animate-pulse">
