@@ -740,10 +740,101 @@ export default function EditAuctionPage() {
             </Card>
           )}
 
-          {/* Items Grid - Scrollable Area */}
+          {/* Items View - Scrollable Area */}
           <div className="flex-1 overflow-y-auto">
             {lots.length > 0 ? (
-              <div className="grid gap-3 grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 pb-4 pr-1">
+              viewMode === 'table' ? (
+                // TABLE VIEW
+                <div className="pb-4">
+                  <table className="w-full text-sm">
+                    <thead className="sticky top-0 bg-gray-50 border-b z-10">
+                      <tr>
+                        <th className="text-left p-3 font-medium text-gray-700">#</th>
+                        <th className="text-left p-3 font-medium text-gray-700">Image</th>
+                        <th className="text-left p-3 font-medium text-gray-700">Title</th>
+                        <th className="text-right p-3 font-medium text-gray-700">Bids</th>
+                        <th className="text-right p-3 font-medium text-gray-700">Start</th>
+                        <th className="text-right p-3 font-medium text-gray-700">Current</th>
+                        <th className="text-center p-3 font-medium text-gray-700">Status</th>
+                        <th className="text-right p-3 font-medium text-gray-700">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lots.map((lot, index) => (
+                        <tr key={lot.id} className="border-b hover:bg-gray-50 transition-colors">
+                          <td className="p-3 text-gray-500">#{index + 1}</td>
+                          <td className="p-3">
+                            <div className="w-16 h-16 rounded overflow-hidden bg-gray-100">
+                              {lot.mediaUrls && Array.isArray(lot.mediaUrls) && lot.mediaUrls.length > 0 ? (
+                                <img src={lot.mediaUrls[0]} alt={lot.title} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-2xl opacity-20">🏺</div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <div className="font-medium text-gray-900 max-w-xs truncate">{lot.title}</div>
+                            <div className="text-xs text-gray-500">{lot.condition}</div>
+                          </td>
+                          <td className="p-3 text-right">
+                            <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                              {lot._count?.bids || 0}
+                            </span>
+                          </td>
+                          <td className="p-3 text-right text-gray-600">${(lot.startingBidCents / 100).toFixed(0)}</td>
+                          <td className="p-3 text-right">
+                            {lot.currentBidCents ? (
+                              <span className="font-bold text-green-600">${(lot.currentBidCents / 100).toFixed(0)}</span>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </td>
+                          <td className="p-3 text-center">
+                            {lot.published ? (
+                              <span className="inline-block w-2 h-2 bg-green-500 rounded-full" title="Published" />
+                            ) : (
+                              <span className="inline-block w-2 h-2 bg-gray-300 rounded-full" title="Draft" />
+                            )}
+                          </td>
+                          <td className="p-3 text-right">
+                            <div className="flex justify-end gap-1">
+                              <button
+                                onClick={() => handleEditLot(lot)}
+                                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                                title="Edit"
+                              >
+                                <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => handleViewBids(null as any, lot)}
+                                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                                title="View Bids"
+                              >
+                                <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteLot(lot.id)}
+                                className="p-2 hover:bg-red-50 rounded transition-colors"
+                                title="Delete"
+                              >
+                                <svg className="h-4 w-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                // GRID VIEW
+                <div className="grid gap-3 grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 pb-4 pr-1">
                 {lots.map((lot, index) => (
                   <Card key={lot.id} className="group relative overflow-hidden hover:shadow-md transition-all cursor-pointer" onClick={() => handleEditLot(lot)}>
                     {false ? (
