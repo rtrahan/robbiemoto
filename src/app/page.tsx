@@ -1,6 +1,6 @@
 import { CountdownHero } from '@/components/landing/countdown-hero'
 import { LiveAuctionView } from '@/components/live-auction-view'
-import { LiveCountdown } from '@/components/live-countdown'
+import { LiveAuctionCountdown } from '@/components/live-auction-countdown'
 import { UpcomingAuctionPreview } from '@/components/upcoming-auction-preview'
 import { PastAuctionsSection } from '@/components/past-auctions-section'
 import { AuthHeader } from '@/components/auth-header'
@@ -35,17 +35,7 @@ export default async function HomePage() {
 
       {/* Countdown Bar - Full Width, Sticky */}
       {auction?.status === 'live' && (
-        <div className="fixed top-16 z-40 w-full bg-gradient-to-r from-gray-900 to-gray-800 border-b border-gray-700 shadow-lg">
-          <div className="w-full px-4 py-2 md:py-3">
-            <div className="flex items-center justify-center gap-2 md:gap-6">
-              <div className="text-[10px] md:text-xs uppercase tracking-wider text-gray-400 whitespace-nowrap">
-                🔴 Ends In
-              </div>
-              <LiveCountdown endsAt={auction.endsAt} />
-              <div className="text-[10px] md:text-xs text-gray-400 hidden lg:block truncate max-w-xs">{auction.name}</div>
-            </div>
-          </div>
-        </div>
+        <LiveAuctionCountdown auction={auction} />
       )}
 
       {/* Main Content */}

@@ -106,17 +106,6 @@ export function LiveAuctionView({ auction }: LiveAuctionViewProps) {
           </span>
         </div>
         
-        {/* Extended Bidding Banner */}
-        {hasExtendedItems && (
-          <div className="bg-orange-50 border border-orange-300 rounded-lg p-3 mb-4 animate-pulse">
-            <p className="text-sm font-bold text-orange-700">
-              ⏰ EXTENDED BIDDING - Some items remain open
-            </p>
-            <p className="text-xs text-orange-600">
-              Individual items may close at different times
-            </p>
-          </div>
-        )}
         
         <h1 className="font-serif text-4xl font-light text-gray-900 mb-3 md:text-5xl">
           {auction.name}
