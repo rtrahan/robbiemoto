@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Get the lot
+      // Get the lot with auction data for soft close calculation
       const lot = await prisma.lot.findUnique({
         where: { id: lotId },
         include: {
@@ -56,11 +56,35 @@ export async function POST(request: NextRequest) {
             orderBy: { placedAt: 'desc' },
             take: 1,
           },
+          auction: {
+            select: {
+              endsAt: true,
+              softCloseWindowSec: true,
+              softCloseExtendSec: true,
+            },
+          },
         },
       })
 
       if (!lot) {
         return NextResponse.json({ error: 'Lot not found' }, { status: 404 })
+      }
+      
+      // Calculate effective end time with soft close
+      const { calculateItemEndTime } = await import('@/lib/soft-close')
+      const itemEndTime = calculateItemEndTime(
+        lot.auction.endsAt,
+        lot.lastBidAt,
+        lot.auction.softCloseWindowSec,
+        lot.auction.softCloseExtendSec
+      )
+      
+      // Check if item is still open (even if auction technically ended)
+      if (new Date() > itemEndTime) {
+        return NextResponse.json(
+          { error: 'Bidding has closed for this item' },
+          { status: 400 }
+        )
       }
 
       // Check if bid is valid (at least $5 higher than current)
