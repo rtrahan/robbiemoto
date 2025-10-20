@@ -32,7 +32,24 @@ export async function GET(
         },
       })
       
-      return NextResponse.json(lots)
+      // Calculate soft close end times for each lot
+      const { calculateItemEndTime } = await import('@/lib/soft-close')
+      const lotsWithSoftClose = lots.map(lot => {
+        const itemEndTime = calculateItemEndTime(
+          lot.auction.endsAt,
+          lot.lastBidAt,
+          lot.auction.softCloseWindowSec,
+          lot.auction.softCloseExtendSec
+        )
+        
+        return {
+          ...lot,
+          effectiveEndTime: itemEndTime.toISOString(),
+          isExtended: itemEndTime > lot.auction.endsAt,
+        }
+      })
+      
+      return NextResponse.json(lotsWithSoftClose)
     } catch (dbError) {
       // Fallback to Supabase (silent - don't spam logs)
       const { supabaseServer } = await import('@/lib/supabase-server')
