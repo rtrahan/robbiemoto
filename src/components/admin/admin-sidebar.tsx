@@ -6,11 +6,13 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
   Gavel,
+  ShoppingBag,
 } from 'lucide-react'
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Manage Auctions', href: '/admin/auctions', icon: Gavel },
+  { name: 'Manage Products', href: '/admin/products', icon: ShoppingBag },
 ]
 
 export function AdminSidebar({ onClose }: { onClose?: () => void }) {
