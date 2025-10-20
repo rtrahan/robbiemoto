@@ -375,6 +375,13 @@ function LotCard({ lot: initialLot }: { lot: any }) {
     }`}>
       {/* Media Carousel */}
       <div className="aspect-square bg-gray-50 overflow-hidden relative">
+        {/* Per-Item Countdown for Soft Close */}
+        {(lot.isExtended || lot.effectiveEndTime) && (
+          <ItemCountdown 
+            endsAt={lot.effectiveEndTime || lot.auction?.endsAt} 
+            isExtended={lot.isExtended}
+          />
+        )}
         {lot.mediaUrls && lot.mediaUrls.length > 0 ? (
           <>
             {/* Current Media */}
