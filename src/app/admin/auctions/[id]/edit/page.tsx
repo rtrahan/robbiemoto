@@ -1006,8 +1006,9 @@ export default function EditAuctionPage() {
                       </>
                     )}
                   </Card>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )
             ) : (
               <Card className="h-full flex flex-col items-center justify-center border-2 border-dashed p-12">
                 <div className="text-7xl opacity-10 mb-4">🏺</div>
