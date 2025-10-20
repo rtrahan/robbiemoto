@@ -159,6 +159,11 @@ function LotCard({ lot: initialLot }: { lot: any }) {
   const currentBid = lot.currentBidCents || lot.startingBidCents
   const minNextBid = currentBid + 500 // $5 increment
   
+  // Calculate if item is closed
+  const effectiveEndTime = lot.effectiveEndTime || lot.auction?.endsAt
+  const isClosed = effectiveEndTime ? new Date(effectiveEndTime) < new Date() : false
+  const isExtended = lot.isExtended || false
+  
   // Helper to check if URL is a video
   const isVideo = (url: string) => {
     return /\.(mp4|mov|webm|ogg)$/i.test(url)
