@@ -124,6 +124,7 @@ model Lot {
   published         Boolean    @default(true)
   sold              Boolean    @default(false)
   reserveMet        Boolean    @default(false)
+  lastBidAt         DateTime?  // Track last bid for soft close extension
   
   // Display
   sortOrder         Int        @default(0)

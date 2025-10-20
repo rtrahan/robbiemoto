@@ -22,6 +22,13 @@ export async function GET(
           _count: {
             select: { bids: true },
           },
+          auction: {
+            select: {
+              endsAt: true,
+              softCloseWindowSec: true,
+              softCloseExtendSec: true,
+            },
+          },
         },
       })
       
