@@ -396,6 +396,7 @@ function LotCard({ lot: initialLot }: { lot: any }) {
         {/* Per-Item Countdown for Soft Close */}
         {(lot.isExtended || lot.effectiveEndTime) && (
           <ItemCountdown 
+            key={lot.effectiveEndTime} 
             endsAt={lot.effectiveEndTime || lot.auction?.endsAt} 
             isExtended={lot.isExtended}
           />
