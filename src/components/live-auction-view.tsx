@@ -46,6 +46,11 @@ export function LiveAuctionView({ auction }: LiveAuctionViewProps) {
     }
     
     fetchLots()
+    
+    // Auto-refresh lots every 3 seconds to pick up extended bidding changes
+    const refreshInterval = setInterval(fetchLots, 3000)
+    
+    return () => clearInterval(refreshInterval)
   }, [auction.id])
 
   useEffect(() => {
