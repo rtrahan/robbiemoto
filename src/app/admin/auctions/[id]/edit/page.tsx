@@ -835,7 +835,7 @@ export default function EditAuctionPage() {
               ) : (
                 // GRID VIEW
                 <div className="grid gap-3 grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 pb-4 pr-1">
-                {lots.map((lot, index) => (
+                  {lots.map((lot, index) => (
                   <Card key={lot.id} className="group relative overflow-hidden hover:shadow-md transition-all cursor-pointer" onClick={() => handleEditLot(lot)}>
                     {false ? (
                       /* EDIT MODE */
