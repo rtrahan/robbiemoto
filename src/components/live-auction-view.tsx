@@ -142,10 +142,15 @@ export function LiveAuctionView({ auction }: LiveAuctionViewProps) {
   )
 }
 
-function LotCard({ lot: initialLot }: { lot: any }) {
+function LotCard({ lot: initialLot, onLotUpdate }: { lot: any; onLotUpdate: () => void }) {
   const [lot, setLot] = useState(initialLot)
   const [bidAmount, setBidAmount] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // Update lot when parent refreshes data
+  useEffect(() => {
+    setLot(initialLot)
+  }, [initialLot.effectiveEndTime, initialLot.currentBidCents, initialLot.lastBidAt])
   const [showBidHistory, setShowBidHistory] = useState(false)
   const [bidHistory, setBidHistory] = useState<any[]>([])
   const [newBidFlash, setNewBidFlash] = useState(false)
