@@ -30,7 +30,7 @@ export default function EditAuctionPage() {
   const [showItemModal, setShowItemModal] = useState(false)
   const [editingLot, setEditingLot] = useState<string | null>(null)
   const [editFormData, setEditFormData] = useState<any>({})
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('table')
   const [formData, setFormData] = useState({
     name: '',
     description: '',
