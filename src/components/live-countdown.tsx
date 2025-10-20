@@ -41,16 +41,18 @@ export function LiveCountdown({ endsAt }: { endsAt: Date | string }) {
   }, [endsAt])
 
   return (
-    <div className={`flex items-center gap-1.5 md:gap-3 ${isUrgent ? 'animate-pulse' : ''}`}>
-      <Clock className={`h-3.5 w-3.5 md:h-4 md:w-4 text-white flex-shrink-0 ${isUrgent ? 'animate-pulse' : ''}`} />
-      <div className={`font-mono text-lg md:text-2xl font-bold tracking-tight md:tracking-wide whitespace-nowrap ${
-        isUrgent ? 'text-red-300 animate-pulse' : 'text-white'
+    <div className="flex items-center gap-2 md:gap-4">
+      <Clock className={`h-4 w-4 md:h-5 md:w-5 flex-shrink-0 ${
+        isUrgent ? 'text-red-400 animate-pulse' : 'text-white'
+      }`} />
+      <div className={`font-mono text-xl md:text-2xl font-bold tracking-wide whitespace-nowrap ${
+        isUrgent ? 'text-red-400 animate-pulse' : 'text-white'
       }`}>
         {timeRemaining || '...'}
       </div>
       {isUrgent && (
-        <span className="text-xs text-red-300 font-bold animate-pulse hidden md:inline">
-          CLOSING SOON!
+        <span className="text-xs text-red-400 font-bold uppercase tracking-wider animate-pulse ml-2">
+          Closing!
         </span>
       )}
     </div>
