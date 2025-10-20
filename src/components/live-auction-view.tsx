@@ -24,10 +24,9 @@ export function LiveAuctionView({ auction }: LiveAuctionViewProps) {
   const [timeRemaining, setTimeRemaining] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [hasExtendedItems, setHasExtendedItems] = useState(false)
-
-  useEffect(() => {
-    // Fetch lots
-    const fetchLots = async () => {
+  
+  // Function to refresh lot data
+  const refreshLots = async () => {
       try {
         const response = await fetch(`/api/auctions/${auction.id}/lots`)
         if (response.ok) {
@@ -128,7 +127,7 @@ export function LiveAuctionView({ auction }: LiveAuctionViewProps) {
         
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {lots.map((lot) => (
-            <LotCard key={lot.id} lot={lot} />
+            <LotCard key={lot.id} lot={lot} onLotUpdate={refreshLots} />
           ))}
         </div>
 
