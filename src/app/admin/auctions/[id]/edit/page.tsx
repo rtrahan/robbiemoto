@@ -507,6 +507,9 @@ export default function EditAuctionPage() {
                   value={formData.startsAt}
                   onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
                 />
+                <p className="text-xs text-blue-600">
+                  Set in YOUR timezone - system handles the rest
+                </p>
               </div>
 
               <div className="space-y-1.5">
@@ -516,8 +519,8 @@ export default function EditAuctionPage() {
                   value={formData.endsAt}
                   onChange={(e) => setFormData({ ...formData, endsAt: e.target.value })}
                 />
-                <p className="text-xs text-muted-foreground">
-                  All times shown in your local timezone
+                <p className="text-xs text-blue-600">
+                  Users worldwide will see this in their local time
                 </p>
               </div>
 
