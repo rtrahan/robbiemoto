@@ -23,6 +23,7 @@ export function LiveAuctionView({ auction }: LiveAuctionViewProps) {
   const [lots, setLots] = useState<any[]>([])
   const [timeRemaining, setTimeRemaining] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const [hasExtendedItems, setHasExtendedItems] = useState(false)
 
   useEffect(() => {
     // Fetch lots
@@ -32,6 +33,10 @@ export function LiveAuctionView({ auction }: LiveAuctionViewProps) {
         if (response.ok) {
           const data = await response.json()
           setLots(data)
+          
+          // Check if any items are in extended bidding
+          const anyExtended = data.some((lot: any) => lot.isExtended)
+          setHasExtendedItems(anyExtended)
         }
       } catch (error) {
         console.error('Failed to fetch lots')
@@ -89,7 +94,7 @@ export function LiveAuctionView({ auction }: LiveAuctionViewProps) {
   return (
     <div className="container px-4 py-12 md:px-8">
       {/* Header with Global LIVE Badge */}
-      <div className="mb-12 text-center max-w-2xl mx-auto">
+      <div className="mb-8 text-center max-w-2xl mx-auto">
         {/* LIVE Badge - Prominent */}
         <div className="flex items-center justify-center gap-2 mb-4">
           <span className="relative flex h-3 w-3">
@@ -100,6 +105,18 @@ export function LiveAuctionView({ auction }: LiveAuctionViewProps) {
             Auction Live
           </span>
         </div>
+        
+        {/* Extended Bidding Banner */}
+        {hasExtendedItems && (
+          <div className="bg-orange-50 border border-orange-300 rounded-lg p-3 mb-4 animate-pulse">
+            <p className="text-sm font-bold text-orange-700">
+              ⏰ EXTENDED BIDDING - Some items remain open
+            </p>
+            <p className="text-xs text-orange-600">
+              Individual items may close at different times
+            </p>
+          </div>
+        )}
         
         <h1 className="font-serif text-4xl font-light text-gray-900 mb-3 md:text-5xl">
           {auction.name}
