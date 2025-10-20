@@ -30,6 +30,7 @@ export default function EditAuctionPage() {
   const [showItemModal, setShowItemModal] = useState(false)
   const [editingLot, setEditingLot] = useState<string | null>(null)
   const [editFormData, setEditFormData] = useState<any>({})
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -580,9 +581,29 @@ export default function EditAuctionPage() {
           {/* Items Header - Fixed */}
           <div className="flex items-center justify-between mb-3 gap-2 flex-shrink-0">
             <h2 className="font-semibold text-sm sm:text-base">{lots.length} {lots.length === 1 ? 'Item' : 'Items'}</h2>
-            <Button onClick={handleNewLot} size="sm" className="text-xs">
-              <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Add Item
-            </Button>
+            <div className="flex gap-2">
+              <div className="border rounded-lg p-1 flex gap-1">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                    viewMode === 'grid' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  Grid
+                </button>
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                    viewMode === 'table' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  Table
+                </button>
+              </div>
+              <Button onClick={handleNewLot} size="sm" className="text-xs">
+                <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Add Item
+              </Button>
+            </div>
           </div>
 
           {/* Add Item Form - Removed, now using modal */}
