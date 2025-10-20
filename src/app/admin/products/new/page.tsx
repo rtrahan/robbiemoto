@@ -26,6 +26,7 @@ export default function NewProductPage() {
     featured: false,
     status: 'ACTIVE',
   })
+  const [mediaUrls, setMediaUrls] = useState<string[]>([])
 
   const generateDescription = async () => {
     if (!formData.name) {
@@ -74,6 +75,7 @@ export default function NewProductPage() {
         body: JSON.stringify({
           ...formData,
           slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          mediaUrls,
         }),
       })
 
@@ -236,11 +238,62 @@ export default function NewProductPage() {
             {/* Images */}
             <Card className="p-6">
               <h2 className="font-semibold mb-4">Product Images</h2>
-              <div className="border-2 border-dashed rounded-lg p-12 text-center">
+              
+              {mediaUrls.length > 0 && (
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  {mediaUrls.map((url, index) => (
+                    <div key={index} className="relative aspect-square bg-gray-100 rounded overflow-hidden group">
+                      <img src={url} alt={`Product ${index + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setMediaUrls(mediaUrls.filter((_, i) => i !== index))}
+                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <label className="border-2 border-dashed rounded-lg p-8 text-center block cursor-pointer hover:border-gray-400 transition-colors">
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files || [])
+                    if (files.length === 0) return
+                    
+                    toast.info('Uploading...')
+                    
+                    const formData = new FormData()
+                    files.forEach(file => formData.append('files', file))
+                    
+                    try {
+                      const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData,
+                      })
+                      
+                      if (response.ok) {
+                        const { urls } = await response.json()
+                        setMediaUrls([...mediaUrls, ...urls])
+                        toast.success(`${urls.length} file(s) uploaded!`)
+                        e.target.value = ''
+                      }
+                    } catch (error) {
+                      toast.error('Upload failed')
+                    }
+                  }}
+                  className="hidden"
+                />
                 <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-sm text-gray-600 mb-2">Upload product photos</p>
-                <p className="text-xs text-gray-400">Coming soon - for now, add image URLs after creation</p>
-              </div>
+                <p className="text-sm text-gray-600 mb-2">Click to upload images or videos</p>
+                <p className="text-xs text-gray-400">Supports JPG, PNG, MP4, MOV</p>
+              </label>
             </Card>
           </div>
 
