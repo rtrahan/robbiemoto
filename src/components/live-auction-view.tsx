@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { ItemCountdown } from '@/components/item-countdown'
 
 interface LiveAuctionViewProps {
   auction: any
