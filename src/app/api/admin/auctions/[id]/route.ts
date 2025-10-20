@@ -125,20 +125,19 @@ export async function PATCH(
     console.log('Updating auction - raw input:', { startsAt, endsAt, published })
     
     try {
-      // If startsAt/endsAt are already ISO strings (with Z), use them
-      // If they're datetime-local format (2025-10-17T23:20), browser already sent them
-      const startsAtDate = startsAt.includes('Z') || startsAt.includes('+') 
-        ? new Date(startsAt)
-        : new Date(startsAt) // This will treat as local time and convert to UTC
+      // datetime-local format: "2025-10-20T18:00" (NO timezone info)
+      // When we do new Date() on this, JS treats it as LOCAL time automatically!
+      // This is correct behavior - the string without Z or offset is interpreted as local
+      const startsAtDate = new Date(startsAt)
+      const endsAtDate = new Date(endsAt)
       
-      const endsAtDate = endsAt.includes('Z') || endsAt.includes('+')
-        ? new Date(endsAt)
-        : new Date(endsAt)
-      
-      console.log('Saving to database as UTC:', {
-        startsAt: startsAtDate.toISOString(),
-        endsAt: endsAtDate.toISOString(),
-        localTimeWas: { startsAt, endsAt }
+      console.log('🕐 Converting to UTC:', {
+        inputStart: startsAt,
+        inputEnd: endsAt,
+        outputStartUTC: startsAtDate.toISOString(),
+        outputEndUTC: endsAtDate.toISOString(),
+        outputStartLocal: startsAtDate.toLocaleString(),
+        outputEndLocal: endsAtDate.toLocaleString(),
       })
       
       const auction = await prisma.auction.update({

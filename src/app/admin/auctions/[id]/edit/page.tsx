@@ -110,16 +110,9 @@ export default function EditAuctionPage() {
     setIsLoading(true)
     
     try {
-      // Convert datetime-local to ISO string explicitly as LOCAL time
-      // datetime-local gives "2025-10-20T16:00" which we must treat as LOCAL, not UTC
-      const startsAtLocal = new Date(formData.startsAt)
-      const endsAtLocal = new Date(formData.endsAt)
-      
-      console.log('Sending to API:', {
-        starts: startsAtLocal.toISOString(),
-        ends: endsAtLocal.toISOString(),
-        inputWas: { starts: formData.startsAt, ends: formData.endsAt }
-      })
+      // datetime-local gives us "2025-10-20T18:00" with NO timezone
+      // We need to append timezone offset to make it local time
+      // Then convert to UTC for storage
       
       const response = await fetch(`/api/admin/auctions/${auctionId}`, {
         method: 'PATCH',
@@ -127,8 +120,8 @@ export default function EditAuctionPage() {
         body: JSON.stringify({
           name: formData.name,
           description: formData.description,
-          startsAt: startsAtLocal.toISOString(),
-          endsAt: endsAtLocal.toISOString(),
+          startsAt: formData.startsAt, // Send raw - backend will handle properly
+          endsAt: formData.endsAt, // Send raw - backend will handle properly  
           published: formData.published,
           softCloseWindowSec: 120,
           softCloseExtendSec: 120,
