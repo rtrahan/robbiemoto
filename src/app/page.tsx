@@ -161,11 +161,28 @@ async function getCurrentOrNextAuction() {
       
       if (nextAuction) {
         console.log('Found UPCOMING auction:', nextAuction.name, 'starts at:', nextAuction.startsAt)
-      } else {
-        console.log('No published auctions found')
+        return { ...nextAuction, status: 'preview' as const }
       }
       
-      return nextAuction ? { ...nextAuction, status: 'preview' as const } : null
+      // If no upcoming auction, show the most recent ended auction
+      const lastEndedAuction = await prisma.auction.findFirst({
+        where: {
+          published: true,
+          endsAt: { lt: now },
+        },
+        orderBy: { endsAt: 'desc' },
+        include: {
+          _count: { select: { lots: true } },
+        },
+      })
+      
+      if (lastEndedAuction) {
+        console.log('Showing recently ENDED auction:', lastEndedAuction.name)
+        return { ...lastEndedAuction, status: 'ended' as const }
+      }
+      
+      console.log('No published auctions found')
+      return null
     } catch (prismaError) {
       // Prisma failed - try Supabase direct query (silent)
       const { supabaseServer } = await import('@/lib/supabase-server')
