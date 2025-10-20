@@ -13,7 +13,8 @@ export function ItemCountdown({ endsAt, isExtended }: ItemCountdownProps) {
   const [isUrgent, setIsUrgent] = useState(false)
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    // Reset immediately when endsAt changes
+    const updateTime = () => {
       const now = new Date().getTime()
       const end = new Date(endsAt).getTime()
       const distance = end - now
@@ -21,8 +22,7 @@ export function ItemCountdown({ endsAt, isExtended }: ItemCountdownProps) {
       if (distance < 0) {
         setTimeRemaining('Closed')
         setIsUrgent(false)
-        clearInterval(timer)
-        return
+        return false
       }
 
       const minutes = Math.floor(distance / (1000 * 60))
@@ -31,7 +31,16 @@ export function ItemCountdown({ endsAt, isExtended }: ItemCountdownProps) {
       setIsUrgent(distance < 60000) // Last minute
 
       setTimeRemaining(`${minutes}:${seconds.toString().padStart(2, '0')}`)
-    }, 1000)
+      return true
+    }
+    
+    // Update immediately
+    const shouldContinue = updateTime()
+    
+    if (!shouldContinue) return
+    
+    // Then update every second
+    const timer = setInterval(updateTime, 1000)
 
     return () => clearInterval(timer)
   }, [endsAt])
