@@ -42,6 +42,21 @@ enum UserRole {
   ADMIN
 }
 
+enum ProductCategory {
+  MEN
+  WOMEN
+  LEATHER_GOODS
+  UNISEX
+  CERAMICS
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  SOLD_OUT
+  ARCHIVED
+}
+
 // Waitlist/Signup for email capture
 model Signup {
   id           String   @id @default(cuid())
