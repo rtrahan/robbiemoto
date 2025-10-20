@@ -46,7 +46,7 @@ export default async function ProductPage({ params }: PageProps) {
               <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden sticky top-24">
                 {product.mediaUrls && Array.isArray(product.mediaUrls) && product.mediaUrls.length > 0 ? (
                   <img 
-                    src={product.mediaUrls[0]} 
+                    src={String(product.mediaUrls[0])} 
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />

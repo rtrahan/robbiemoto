@@ -53,7 +53,7 @@ export default async function ProductsPage() {
                   <td className="p-4">
                     <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden">
                       {product.mediaUrls && Array.isArray(product.mediaUrls) && product.mediaUrls.length > 0 ? (
-                        <img src={product.mediaUrls[0]} alt={product.name} className="w-full h-full object-cover" />
+                        <img src={String(product.mediaUrls[0])} alt={product.name} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-2xl opacity-20">🏺</div>
                       )}

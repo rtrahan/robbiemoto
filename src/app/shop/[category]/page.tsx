@@ -72,7 +72,7 @@ export default async function CategoryPage({ params }: PageProps) {
                   <div className="aspect-square bg-gray-100 rounded overflow-hidden mb-4 relative">
                     {product.mediaUrls && Array.isArray(product.mediaUrls) && product.mediaUrls.length > 0 ? (
                       <img 
-                        src={product.mediaUrls[0]} 
+                        src={String(product.mediaUrls[0])} 
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       />
