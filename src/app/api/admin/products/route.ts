@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
       trackInventory,
       featured,
       status,
+      mediaUrls,
     } = body
 
     const product = await prisma.product.create({
@@ -26,6 +27,7 @@ export async function POST(request: NextRequest) {
         category,
         priceCents,
         compareAtCents: compareAtCents || null,
+        mediaUrls: mediaUrls || [],
         stockQuantity,
         trackInventory,
         featured,
