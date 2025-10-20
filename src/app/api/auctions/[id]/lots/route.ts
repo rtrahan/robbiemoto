@@ -42,10 +42,16 @@ export async function GET(
           lot.auction.softCloseExtendSec
         )
         
+        const isExtended = itemEndTime > lot.auction.endsAt
+        
+        if (lot.lastBidAt) {
+          console.log(`Item ${lot.title.substring(0, 20)}: lastBid=${new Date(lot.lastBidAt).toLocaleTimeString()}, closes=${itemEndTime.toLocaleTimeString()}, extended=${isExtended}`)
+        }
+        
         return {
           ...lot,
           effectiveEndTime: itemEndTime.toISOString(),
-          isExtended: itemEndTime > lot.auction.endsAt,
+          isExtended,
         }
       })
       
