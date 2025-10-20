@@ -118,12 +118,13 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      // Update lot's current bid
+      // Update lot's current bid and last bid time for soft close
       await prisma.lot.update({
         where: { id: lotId },
         data: {
           currentBidCents: amountCents,
           reserveMet: lot.reserveCents ? amountCents >= lot.reserveCents : true,
+          lastBidAt: new Date(), // Track for soft close extension
         },
       })
 
@@ -211,12 +212,13 @@ export async function POST(request: NextRequest) {
         .eq('id', lotId)
         .single()
       
-      // Update lot's current bid
+      // Update lot's current bid and last bid time
       await supabaseServer
         .from('Lot')
         .update({
           currentBidCents: amountCents,
           reserveMet: lotData?.reserveCents ? amountCents >= lotData.reserveCents : true,
+          lastBidAt: new Date().toISOString(),
         })
         .eq('id', lotId)
       
