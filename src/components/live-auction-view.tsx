@@ -27,27 +27,28 @@ export function LiveAuctionView({ auction }: LiveAuctionViewProps) {
   
   // Function to refresh lot data
   const refreshLots = async () => {
-      try {
-        const response = await fetch(`/api/auctions/${auction.id}/lots`)
-        if (response.ok) {
-          const data = await response.json()
-          setLots(data)
-          
-          // Check if any items are in extended bidding
-          const anyExtended = data.some((lot: any) => lot.isExtended)
-          setHasExtendedItems(anyExtended)
-        }
-      } catch (error) {
-        console.error('Failed to fetch lots')
-      } finally {
-        setIsLoading(false)
+    try {
+      const response = await fetch(`/api/auctions/${auction.id}/lots`)
+      if (response.ok) {
+        const data = await response.json()
+        setLots(data)
+        
+        // Check if any items are in extended bidding
+        const anyExtended = data.some((lot: any) => lot.isExtended)
+        setHasExtendedItems(anyExtended)
       }
+    } catch (error) {
+      console.error('Failed to fetch lots')
+    } finally {
+      setIsLoading(false)
     }
-    
-    fetchLots()
+  }
+
+  useEffect(() => {
+    refreshLots()
     
     // Auto-refresh lots every 3 seconds to pick up extended bidding changes
-    const refreshInterval = setInterval(fetchLots, 3000)
+    const refreshInterval = setInterval(refreshLots, 3000)
     
     return () => clearInterval(refreshInterval)
   }, [auction.id])
