@@ -386,9 +386,16 @@ function LotCard({ lot: initialLot }: { lot: any }) {
     }
   }
   
+  // Check if item is in soft close (last 2 minutes)
+  const isInSoftClose = lot.isExtended || (lot.effectiveEndTime && new Date(lot.effectiveEndTime) > new Date(lot.auction?.endsAt))
+  
   return (
     <div className={`group border-2 bg-white hover:border-gray-400 transition-all ${
-      isWinning ? 'border-green-500 shadow-lg shadow-green-100' : 'border-gray-200'
+      isWinning 
+        ? 'border-green-500 shadow-lg shadow-green-100' 
+        : isInSoftClose
+        ? 'border-orange-500 shadow-lg shadow-orange-100'
+        : 'border-gray-200'
     }`}>
       {/* Media Carousel */}
       <div className="aspect-square bg-gray-50 overflow-hidden relative">
