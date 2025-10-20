@@ -57,6 +57,41 @@ enum ProductStatus {
   ARCHIVED
 }
 
+// Shop Products
+model Product {
+  id              String          @id @default(cuid())
+  slug            String          @unique
+  
+  name            String
+  description     String?
+  category        ProductCategory
+  status          ProductStatus   @default(DRAFT)
+  
+  priceCents      Int
+  compareAtCents  Int?           // Original price for sale display
+  
+  mediaUrls       Json?          // Product images
+  
+  // Inventory
+  stockQuantity   Int            @default(0)
+  trackInventory  Boolean        @default(true)
+  
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  
+  // Display
+  featured        Boolean        @default(false)
+  sortOrder       Int            @default(0)
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  @@index([category])
+  @@index([status])
+  @@index([featured])
+}
+
 // Waitlist/Signup for email capture
 model Signup {
   id           String   @id @default(cuid())
