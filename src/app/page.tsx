@@ -89,6 +89,13 @@ export default async function HomePage() {
                     Follow for Next Drop
                   </a>
                 </div>
+
+                {/* Next Drop Info */}
+                <div className="pt-8 border-t">
+                  <p className="text-sm uppercase tracking-[0.2em] text-gray-400">
+                    Next monthly drop coming soon
+                  </p>
+                </div>
               </div>
             </div>
           )
