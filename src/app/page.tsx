@@ -111,6 +111,42 @@ async function getCurrentOrNextAuction() {
         return { ...liveAuction, status: 'live' as const }
       }
       
+      // Check for auctions in extended bidding (ended but items still open)
+      const recentlyEndedAuction = await prisma.auction.findFirst({
+        where: {
+          published: true,
+          startsAt: { lte: now },
+          endsAt: { lt: now }, // Ended
+        },
+        orderBy: { endsAt: 'desc' },
+        include: {
+          _count: { select: { lots: true } },
+          lots: {
+            where: { published: true },
+            select: { id: true, lastBidAt: true },
+          },
+        },
+      })
+      
+      if (recentlyEndedAuction) {
+        // Check if any items still open due to soft close
+        const { calculateItemEndTime } = await import('@/lib/soft-close')
+        const hasOpenItems = recentlyEndedAuction.lots.some(lot => {
+          const itemEnd = calculateItemEndTime(
+            recentlyEndedAuction.endsAt,
+            lot.lastBidAt,
+            recentlyEndedAuction.softCloseWindowSec,
+            recentlyEndedAuction.softCloseExtendSec
+          )
+          return itemEnd > now
+        })
+        
+        if (hasOpenItems) {
+          console.log('Auction in EXTENDED BIDDING:', recentlyEndedAuction.name)
+          return { ...recentlyEndedAuction, status: 'live' as const, isExtendedBidding: true }
+        }
+      }
+      
       // If no live auction, look for upcoming
       const nextAuction = await prisma.auction.findFirst({
         where: {
