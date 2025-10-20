@@ -607,10 +607,24 @@ function LotCard({ lot: initialLot, onLotUpdate }: { lot: any; onLotUpdate: () =
               </div>
             </>
           ) : (
-            <div className="bg-gray-100 border-2 border-gray-300 rounded-lg p-6 text-center">
-              <p className="text-lg font-bold text-gray-700 mb-1">⏰ Bidding Closed</p>
-              <p className="text-sm text-gray-600">This item is no longer accepting bids</p>
-            </div>
+            // Closed state - show if user won or lost
+            isWinning ? (
+              <div className="bg-green-50 border-2 border-green-400 rounded-lg p-6 text-center">
+                <p className="text-2xl mb-2">🏆</p>
+                <p className="text-lg font-bold text-green-700 mb-1">You Won!</p>
+                <p className="text-sm text-green-600">Congratulations! We'll contact you about shipping.</p>
+              </div>
+            ) : lot._count?.bids > 0 && currentUser ? (
+              <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6 text-center">
+                <p className="text-lg font-bold text-red-700 mb-1">Outbid</p>
+                <p className="text-sm text-red-600">You didn't win this item</p>
+              </div>
+            ) : (
+              <div className="bg-gray-100 border-2 border-gray-300 rounded-lg p-6 text-center">
+                <p className="text-lg font-bold text-gray-700 mb-1">⏰ Bidding Closed</p>
+                <p className="text-sm text-gray-600">This item is no longer accepting bids</p>
+              </div>
+            )
           )}
 
           {/* Bid History Toggle */}
