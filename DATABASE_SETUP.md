@@ -178,3 +178,4 @@ If you get stuck:
 
 **Once set up, your auction platform will be FULLY functional!** 🎉
 
+

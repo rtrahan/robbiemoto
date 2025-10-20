@@ -30,3 +30,4 @@ When you set an auction to end at **"11:20 PM"** on your computer:
 
 The countdown on the homepage shows the correct time for each user's location.
 
+

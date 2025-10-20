@@ -78,3 +78,4 @@ For now, testing works with Supabase's default emails!
 
 **Ready to go!** Just enable Email auth and we're set! 🚀
 
+

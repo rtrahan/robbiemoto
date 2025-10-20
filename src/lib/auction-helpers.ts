@@ -18,3 +18,4 @@ export function isAuctionLive(auction: { startsAt: Date | string; endsAt: Date |
   return getAuctionStatus(auction) === 'LIVE'
 }
 
+

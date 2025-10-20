@@ -110,15 +110,25 @@ export default function EditAuctionPage() {
     setIsLoading(true)
     
     try {
-      // Send the ISO strings directly - they're already in the right format
+      // Convert datetime-local to ISO string explicitly as LOCAL time
+      // datetime-local gives "2025-10-20T16:00" which we must treat as LOCAL, not UTC
+      const startsAtLocal = new Date(formData.startsAt)
+      const endsAtLocal = new Date(formData.endsAt)
+      
+      console.log('Sending to API:', {
+        starts: startsAtLocal.toISOString(),
+        ends: endsAtLocal.toISOString(),
+        inputWas: { starts: formData.startsAt, ends: formData.endsAt }
+      })
+      
       const response = await fetch(`/api/admin/auctions/${auctionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
           description: formData.description,
-          startsAt: formData.startsAt, // Keep as-is, backend will parse
-          endsAt: formData.endsAt, // Keep as-is, backend will parse
+          startsAt: startsAtLocal.toISOString(),
+          endsAt: endsAtLocal.toISOString(),
           published: formData.published,
           softCloseWindowSec: 120,
           softCloseExtendSec: 120,

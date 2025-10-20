@@ -68,3 +68,4 @@ Your ceramic auction platform is now fully functional and ready for monthly drop
 
 **Built with care for monthly ceramic auctions** 🏺
 
+

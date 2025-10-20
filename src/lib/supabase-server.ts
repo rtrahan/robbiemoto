@@ -20,3 +20,4 @@ export const USE_SUPABASE_FOR_DATA = !process.env.DATABASE_URL || process.env.VE
 // Export singleton
 export const supabaseServer = createServerSupabaseClient()
 
+
