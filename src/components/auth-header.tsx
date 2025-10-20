@@ -57,9 +57,24 @@ export function AuthHeader() {
     const adminEmails = ['admin@robbiemoto.com', 'robbiemoto@gmail.com']
     const isAdmin = adminEmails.includes(user.email?.toLowerCase() || '')
     
-    // User is logged in - show profile menu
+    // User is logged in - show navigation + profile menu
     return (
-      <DropdownMenu>
+      <div className="flex items-center gap-6">
+        <nav className="hidden md:flex gap-6">
+          <a href="/" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+            Home
+          </a>
+          <a href="/auctions" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+            Auctions
+          </a>
+          <a href="/shop" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+            Shop
+          </a>
+          <a href="/about" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+            About
+          </a>
+        </nav>
+        <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="gap-2">
             <User className="h-4 w-4" />
@@ -90,6 +105,7 @@ export function AuthHeader() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
     )
   }
 
