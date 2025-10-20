@@ -341,6 +341,9 @@ function LotCard({ lot: initialLot }: { lot: any }) {
       if (showBidModal) {
         fetchBidHistory()
       }
+      
+      // Trigger immediate refresh of parent (all lots) to update soft close times
+      onLotUpdate()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed')
     } finally {
