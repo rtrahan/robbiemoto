@@ -556,42 +556,52 @@ function LotCard({ lot: initialLot }: { lot: any }) {
             </a>
           )}
           
-          {/* Quick Bid Button */}
-          <Button 
-            onClick={isLoggedIn ? handleQuickBid : () => window.location.href = '/login'}
-            disabled={isSubmitting}
-            className="w-full"
-            size="lg"
-          >
-            <Gavel className="mr-2 h-4 w-4" />
-            {isLoggedIn ? `Bid ${formatCurrency(minNextBid)}` : 'Sign In to Bid'}
-          </Button>
-
-          {/* Custom Bid */}
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                $
-              </span>
-              <Input
-                type="number"
-                step="5"
-                min={(minNextBid / 100).toFixed(2)}
-                placeholder={(minNextBid / 100).toFixed(2)}
-                value={bidAmount}
-                onChange={(e) => setBidAmount(e.target.value)}
-                className="pl-6"
+          {/* Bidding Controls - Only show if item is still open */}
+          {!isClosed ? (
+            <>
+              {/* Quick Bid Button */}
+              <Button 
+                onClick={isLoggedIn ? handleQuickBid : () => window.location.href = '/login'}
                 disabled={isSubmitting}
-              />
+                className="w-full"
+                size="lg"
+              >
+                <Gavel className="mr-2 h-4 w-4" />
+                {isLoggedIn ? `Bid ${formatCurrency(minNextBid)}` : 'Sign In to Bid'}
+              </Button>
+
+              {/* Custom Bid */}
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                    $
+                  </span>
+                  <Input
+                    type="number"
+                    step="5"
+                    min={(minNextBid / 100).toFixed(2)}
+                    placeholder={(minNextBid / 100).toFixed(2)}
+                    value={bidAmount}
+                    onChange={(e) => setBidAmount(e.target.value)}
+                    className="pl-6"
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <Button 
+                  onClick={handleCustomBid}
+                  disabled={isSubmitting || !bidAmount}
+                  variant="outline"
+                >
+                  Bid
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="bg-gray-100 border-2 border-gray-300 rounded-lg p-6 text-center">
+              <p className="text-lg font-bold text-gray-700 mb-1">⏰ Bidding Closed</p>
+              <p className="text-sm text-gray-600">This item is no longer accepting bids</p>
             </div>
-            <Button 
-              onClick={handleCustomBid}
-              disabled={isSubmitting || !bidAmount}
-              variant="outline"
-            >
-              Bid
-            </Button>
-          </div>
+          )}
 
           {/* Bid History Toggle */}
           {lot._count?.bids > 0 && (
