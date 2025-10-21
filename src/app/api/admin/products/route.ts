@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { revalidatePath } from 'next/cache'
 
 export async function GET(request: NextRequest) {
   try {
@@ -65,6 +66,11 @@ export async function PUT(request: NextRequest) {
         data: updateData,
       })
 
+      // Revalidate shop pages so changes appear immediately
+      revalidatePath('/shop')
+      revalidatePath('/shop/[category]', 'page')
+      revalidatePath(`/shop/products/${product.slug}`)
+
       return NextResponse.json(product)
     } catch (prismaError) {
       console.log('Prisma failed, using Supabase to update product')
@@ -89,6 +95,11 @@ export async function PUT(request: NextRequest) {
         console.error('Supabase product update error:', error)
         throw new Error(error.message)
       }
+      
+      // Revalidate shop pages
+      revalidatePath('/shop')
+      revalidatePath('/shop/[category]', 'page')
+      revalidatePath(`/shop/products/${product.slug}`)
       
       return NextResponse.json(product)
     }
@@ -133,8 +144,14 @@ export async function POST(request: NextRequest) {
           trackInventory,
           featured,
           status,
+          variants,
+          customizationOptions,
         },
       })
+
+      // Revalidate shop pages
+      revalidatePath('/shop')
+      revalidatePath('/shop/[category]', 'page')
 
       return NextResponse.json(product)
     } catch (prismaError) {
