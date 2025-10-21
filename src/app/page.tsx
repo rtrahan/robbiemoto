@@ -124,13 +124,26 @@ export default async function HomePage() {
       </main>
 
       {/* Footer */}
-      {/* Past Auctions Section */}
-      <PastAuctionsSection />
-      
-      <footer className="border-t border-gray-100 py-8 text-center">
-        <p className="text-xs uppercase tracking-[0.2em] text-gray-400">
-          © 2025 Robbiemoto. Handcrafted with care.
-        </p>
+      <footer className="bg-gray-50 border-t border-gray-200 py-16">
+        <div className="container px-4 md:px-8">
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <div className="text-6xl mb-4">🏺</div>
+            <h3 className="text-2xl font-serif font-light">Robbiemoto</h3>
+            <p className="text-gray-600 max-w-xl mx-auto">
+              Handcrafted ceramics and leather goods, one piece at a time. 
+              Monthly auctions and curated shop collections.
+            </p>
+            <div className="flex gap-6 justify-center pt-4 flex-wrap">
+              <a href="/auctions" className="text-sm text-gray-600 hover:text-gray-900">Past Auctions</a>
+              <a href="/shop" className="text-sm text-gray-600 hover:text-gray-900">Shop</a>
+              <a href="/about" className="text-sm text-gray-600 hover:text-gray-900">About</a>
+              <a href="https://instagram.com/robbiemoto" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-gray-900">Instagram</a>
+            </div>
+            <p className="text-sm text-gray-500 pt-6">
+              © 2025 Robbiemoto. All rights reserved.
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   )
