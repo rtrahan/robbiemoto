@@ -156,7 +156,6 @@ export function PastAuctionsSection() {
             </Button>
           </div>
         )}
-      </div>
     </div>
   )
 }
