@@ -442,12 +442,19 @@ async function getDashboardData() {
         .filter((a: any) => getAuctionStatus(a) === 'LIVE')
         .map((a: any) => a.id)
       
+      // Get products from Supabase
+      const { data: allProducts } = await supabaseServer
+        .from('Product')
+        .select('id, status')
+      
       const stats = {
         totalAuctions: totalAuctions || 0,
         publishedAuctions: auctions.filter((a: any) => a.published).length,
         liveAuctions: liveAuctionIds.length,
         totalLots: (allLots || []).length,
         publishedLots: (allLots || []).filter((l: any) => l.published).length,
+        totalProducts: (allProducts || []).length,
+        activeProducts: (allProducts || []).filter((p: any) => p.status === 'ACTIVE').length,
         totalBids: totalBidsCount || 0,
         totalCurrentBids: totalCurrentBids,
         activeBids: totalBidsCount || 0, // TODO: Filter to live auctions only
@@ -481,7 +488,14 @@ async function getDashboardData() {
         })
       )
       
-      return { auctions: auctionsWithStats, products: [], stats }
+      // Get products from Supabase
+      const { data: products } = await supabaseServer
+        .from('Product')
+        .select('id, name, priceCents, stockQuantity, status, mediaUrls, createdAt')
+        .order('createdAt', { ascending: false })
+        .limit(5)
+      
+      return { auctions: auctionsWithStats, products: products || [], stats }
     } catch (supabaseError) {
       console.error('Supabase also failed:', supabaseError)
       return {
