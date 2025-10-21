@@ -128,6 +128,8 @@ export async function POST(request: NextRequest) {
       featured,
       status,
       mediaUrls,
+      variants,
+      customizationOptions,
     } = body
 
     try {
