@@ -36,10 +36,14 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(product)
-  } catch (error) {
-    console.error('Error creating product:', error)
+  } catch (error: any) {
+    console.error('❌ Product creation error:', {
+      message: error.message,
+      code: error.code,
+      meta: error.meta,
+    })
     return NextResponse.json(
-      { error: 'Failed to create product' },
+      { error: error.message || 'Failed to create product' },
       { status: 500 }
     )
   }

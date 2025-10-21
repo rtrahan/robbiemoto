@@ -29,8 +29,8 @@ export default function NewProductPage() {
   const [mediaUrls, setMediaUrls] = useState<string[]>([])
 
   const generateDescription = async () => {
-    if (!formData.name) {
-      toast.error('Enter a product name first')
+    if (mediaUrls.length === 0) {
+      toast.error('Upload at least one image first')
       return
     }
 
@@ -40,7 +40,7 @@ export default function NewProductPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: formData.name,
+          title: formData.name || 'Product',
           type: 'product',
           category: formData.category,
           imageUrls: mediaUrls,
@@ -48,9 +48,14 @@ export default function NewProductPage() {
       })
 
       if (response.ok) {
-        const { description } = await response.json()
-        setFormData({ ...formData, description })
-        toast.success('Description generated!')
+        const result = await response.json()
+        // AI can return both title and description
+        setFormData({ 
+          ...formData, 
+          name: result.title || formData.name,
+          description: result.description 
+        })
+        toast.success('Generated!')
       } else {
         const error = await response.json()
         throw new Error(error.error || 'Failed to generate')
@@ -141,7 +146,7 @@ export default function NewProductPage() {
                       variant="outline"
                       size="sm"
                       onClick={generateDescription}
-                      disabled={isGenerating || !formData.name}
+                      disabled={isGenerating || mediaUrls.length === 0}
                     >
                       {isGenerating ? (
                         <>
@@ -151,7 +156,7 @@ export default function NewProductPage() {
                       ) : (
                         <>
                           <Sparkles className="h-3 w-3 mr-2" />
-                          AI Generate
+                          AI Generate {mediaUrls.length > 0 ? '✓' : ''}
                         </>
                       )}
                     </Button>
