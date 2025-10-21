@@ -70,12 +70,12 @@ export function PastAuctionsSection() {
                   </div>
                 </div>
 
-                {/* Items Grid */}
-                {auction.lots && auction.lots.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                    {auction.lots.slice(0, 12).map((lot: any) => (
-                      <div key={lot.id} className="group">
-                        <div className="aspect-square bg-gray-100 rounded overflow-hidden mb-2 relative">
+                  {/* Items Grid */}
+                  {auction.lots && auction.lots.length > 0 && (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 mb-6">
+                      {auction.lots.slice(0, 12).map((lot: any) => (
+                        <div key={lot.id} className="group">
+                          <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden relative border border-gray-200 group-hover:border-gray-400 transition-all">
                           {lot.mediaUrls && lot.mediaUrls.length > 0 ? (
                             <img 
                               src={lot.mediaUrls[0]} 
