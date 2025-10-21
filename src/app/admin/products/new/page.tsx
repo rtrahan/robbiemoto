@@ -227,7 +227,28 @@ export default function NewProductPage() {
             </Card>
 
             <Card className="p-6">
-              <h2 className="font-semibold mb-4">Product Details</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold">Product Details</h2>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={generateDescription}
+                  disabled={isGenerating || mediaUrls.length === 0}
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-3 w-3 mr-2" />
+                      AI Generate
+                    </>
+                  )}
+                </Button>
+              </div>
               
               <div className="space-y-4">
                 <div>
@@ -248,30 +269,9 @@ export default function NewProductPage() {
                     placeholder="Describe your product..."
                     rows={6}
                   />
-                  <div className="flex items-center justify-between mt-2">
-                    <p className="text-xs text-muted-foreground">
-                      Upload images first, then generate with AI
-                    </p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={generateDescription}
-                      disabled={isGenerating || mediaUrls.length === 0}
-                    >
-                      {isGenerating ? (
-                        <>
-                          <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="h-3 w-3 mr-2" />
-                          AI Generate
-                        </>
-                      )}
-                    </Button>
-                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Upload images first, then click AI Generate above
+                  </p>
                 </div>
 
                 <div>
