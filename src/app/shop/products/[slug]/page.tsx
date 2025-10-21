@@ -141,7 +141,7 @@ export default function ProductPage() {
                   <span className="text-3xl font-bold text-gray-900">
                     {formatCurrency(product.priceCents)}
                   </span>
-                  {product.compareAtCents && product.compareAtCents > product.priceCents && (
+                  {product.compareAtCents > 0 && product.compareAtCents > product.priceCents && (
                     <span className="text-xl text-gray-400 line-through">
                       {formatCurrency(product.compareAtCents)}
                     </span>
