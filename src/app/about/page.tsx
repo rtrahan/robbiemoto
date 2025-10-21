@@ -26,36 +26,28 @@ export default function AboutPage() {
         <div className="container px-4 py-20 md:px-8 max-w-4xl mx-auto">
           {/* Hero */}
           <div className="text-center mb-16">
-            <h1 className="text-6xl font-serif font-light mb-6">About Robbiemoto</h1>
-            <p className="text-xl text-gray-600 leading-relaxed">
-              Handcrafted ceramics and leather goods, one piece at a time
+            <h1 className="text-6xl font-serif font-light mb-6">About Me</h1>
+            <p className="text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
+              Producing handmade leather wallets, clutches, and accessories since 2009
             </p>
           </div>
 
           {/* Story */}
           <div className="prose prose-lg mx-auto">
-            <h2 className="text-3xl font-serif font-light mb-4">Our Story</h2>
-            <p className="text-gray-700 leading-relaxed mb-6">
-              Every piece is carefully crafted by hand, combining traditional techniques with modern design sensibilities. 
-              We believe in creating objects that bring joy to everyday moments.
+            <p className="text-gray-700 leading-relaxed text-lg mb-8">
+              RobbieMoto is focused on creating well-made accessories using genuine leather.
             </p>
 
-            <h2 className="text-3xl font-serif font-light mb-4 mt-12">The Process</h2>
             <p className="text-gray-700 leading-relaxed mb-6">
-              Each ceramic piece begins on the potter's wheel, shaped with intention and care. After drying, pieces 
-              are fired, glazed with custom color palettes, and fired again to create the final product.
+              RobbieMoto is currently a one-woman operation, run by me, <strong>Robbie Matsumoto</strong>. I have loved creating for as long as I can remember. But my love for designing leather goods started years ago when I stumbled across enormous bins of leather scraps at my favorite shop in Minneapolis. I fashioned myself a wallet and then started crafting them for friends as they would ask for their own.
             </p>
 
-            <h2 className="text-3xl font-serif font-light mb-4 mt-12">Monthly Auctions</h2>
             <p className="text-gray-700 leading-relaxed mb-6">
-              We host monthly ceramic auctions featuring one-of-a-kind pieces. Each auction showcases new works,
-              giving collectors the chance to own truly unique handcrafted items.
+              Thanks to the support and encouragement of my hubs, I was able to take this passion of mine and make a business out of it. Americanos, guilty pleasure playlists, collaborating with like-minded friends, and a love for making people smile, keeps me motivated and fueled to create!
             </p>
 
-            <h2 className="text-3xl font-serif font-light mb-4 mt-12">Shop</h2>
-            <p className="text-gray-700 leading-relaxed mb-6">
-              Our shop offers a curated selection of ceramics, leather goods, and accessories available for 
-              immediate purchase. New items are added regularly.
+            <p className="text-gray-700 leading-relaxed mb-6 text-lg font-medium">
+              All of my work is created under one roof in Chattanooga, TN.
             </p>
           </div>
 
