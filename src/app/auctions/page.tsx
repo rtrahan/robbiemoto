@@ -24,9 +24,16 @@ export default function AuctionsPage() {
       </header>
 
       <main className="pt-16">
-        <div className="container px-4 pt-8 md:px-8">
-          <PastAuctionsSection />
+        <div className="container px-4 py-16 md:px-8">
+          <div className="max-w-4xl mx-auto text-center mb-12">
+            <h1 className="text-5xl font-serif font-light mb-4">Past Auctions</h1>
+            <p className="text-gray-600 text-lg">
+              Browse completed monthly ceramic drops and see what sold
+            </p>
+          </div>
         </div>
+
+        <PastAuctionsSection />
       </main>
     </div>
   )
