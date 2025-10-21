@@ -43,11 +43,10 @@ enum UserRole {
 }
 
 enum ProductCategory {
-  MEN
-  WOMEN
-  LEATHER_GOODS
-  UNISEX
   CERAMICS
+  LEATHER
+  ACCESSORIES
+  OTHER
 }
 
 enum ProductStatus {
