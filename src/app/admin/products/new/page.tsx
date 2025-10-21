@@ -40,8 +40,10 @@ export default function NewProductPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: formData.name,
+          title: formData.name,
           type: 'product',
+          category: formData.category,
+          imageUrls: mediaUrls,
         }),
       })
 
@@ -50,10 +52,12 @@ export default function NewProductPage() {
         setFormData({ ...formData, description })
         toast.success('Description generated!')
       } else {
-        throw new Error('Failed to generate')
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to generate')
       }
     } catch (error) {
-      toast.error('Could not generate description')
+      console.error('AI generation error:', error)
+      toast.error(error instanceof Error ? error.message : 'Could not generate description')
     } finally {
       setIsGenerating(false)
     }
@@ -79,15 +83,18 @@ export default function NewProductPage() {
         }),
       })
 
+      const result = await response.json()
+
       if (!response.ok) {
-        throw new Error('Failed to create product')
+        throw new Error(result.error || 'Failed to create product')
       }
 
       toast.success('Product created!')
       router.push('/admin/products')
       router.refresh()
     } catch (error) {
-      toast.error('Failed to create product')
+      console.error('Product creation error:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to create product')
     } finally {
       setIsLoading(false)
     }
