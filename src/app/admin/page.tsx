@@ -13,7 +13,7 @@ export const metadata = {
 }
 
 export default async function AdminDashboard() {
-  const { auctions, stats } = await getDashboardData()
+  const { auctions, products, stats } = await getDashboardData()
   
   return (
     <div className="space-y-8">
@@ -25,10 +25,24 @@ export default async function AdminDashboard() {
             Overview of your auctions and shop
           </p>
         </div>
+        <div className="flex gap-2">
+          <Link href="/admin/products/new">
+            <Button size="sm" variant="outline">
+              <Plus className="mr-2 h-4 w-4" />
+              New Product
+            </Button>
+          </Link>
+          <Link href="/admin/auctions/new">
+            <Button size="sm">
+              <Plus className="mr-2 h-4 w-4" />
+              New Auction
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Quick Stats - Mobile Responsive Grid */}
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
         <Card className="border-l-4 border-l-blue-500">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-1">
@@ -58,12 +72,25 @@ export default async function AdminDashboard() {
         <Card className="border-l-4 border-l-purple-500">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-1">
-              <p className="text-xs font-medium text-muted-foreground">Total Items</p>
+              <p className="text-xs font-medium text-muted-foreground">Auction Items</p>
               <Package className="h-4 w-4 text-muted-foreground" />
             </div>
             <div className="text-2xl font-bold">{stats.totalLots}</div>
             <p className="text-[10px] text-muted-foreground mt-0.5">
               {stats.publishedLots} published
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-l-4 border-l-indigo-500">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs font-medium text-muted-foreground">Shop Products</p>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className="text-2xl font-bold">{stats.totalProducts}</div>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              {stats.activeProducts} active
             </p>
           </CardContent>
         </Card>
@@ -95,68 +122,126 @@ export default async function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Recent Auctions */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Recent Auctions</CardTitle>
-            <Link href="/admin/auctions">
-              <Button variant="outline" size="sm">
-                View All
-              </Button>
-            </Link>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {auctions.length > 0 ? (
-            <div className="space-y-4">
-              {auctions.slice(0, 5).map((auction) => (
-                <div 
-                  key={auction.id}
-                  className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium text-sm">{auction.name}</h3>
-                      <StatusBadge status={auction.status} />
-                      {!auction.published && (
-                        <Badge variant="outline" className="text-xs">Draft</Badge>
-                      )}
+      {/* Recent Activity - Two Columns */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Recent Auctions */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Recent Auctions</CardTitle>
+              <Link href="/admin/auctions">
+                <Button variant="outline" size="sm">
+                  View All
+                </Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {auctions.length > 0 ? (
+              <div className="space-y-4">
+                {auctions.slice(0, 3).map((auction) => (
+                  <div 
+                    key={auction.id}
+                    className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-medium text-sm">{auction.name}</h3>
+                        <StatusBadge status={auction.status} />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        📅 {formatDateTime(auction.startsAt)} → {formatDateTime(auction.endsAt)}
+                      </p>
+                      <div className="flex gap-4 mt-1 text-xs text-muted-foreground">
+                        <span>📦 {auction._count?.lots || 0} items</span>
+                        <span>🔨 {(auction as any).totalBids || 0} bids</span>
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      📅 {formatDateTime(auction.startsAt)} → {formatDateTime(auction.endsAt)}
-                    </p>
-                    <div className="flex gap-4 mt-1 text-xs text-muted-foreground">
-                      <span>📦 {auction._count?.lots || 0} items</span>
-                      <span>🔨 {(auction as any).totalBids || 0} bids</span>
-                      {(auction as any).currentBidTotal > 0 && (
-                        <span>💰 {formatCurrency((auction as any).currentBidTotal)} current</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
                     <Link href={`/admin/auctions/${auction.id}/edit`}>
                       <Button variant="ghost" size="sm">
                         Edit
                       </Button>
                     </Link>
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              <p className="mb-4">No auctions yet</p>
-              <Link href="/admin/auctions/new">
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Your First Auction
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <p className="mb-4">No auctions yet</p>
+                <Link href="/admin/auctions/new">
+                  <Button size="sm">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create First Auction
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Products */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Recent Products</CardTitle>
+              <Link href="/admin/products">
+                <Button variant="outline" size="sm">
+                  View All
                 </Button>
               </Link>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            {products.length > 0 ? (
+              <div className="space-y-4">
+                {products.slice(0, 3).map((product: any) => (
+                  <div 
+                    key={product.id}
+                    className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0"
+                  >
+                    <div className="flex gap-3 flex-1">
+                      {product.mediaUrls?.[0] && (
+                        <img 
+                          src={product.mediaUrls[0]} 
+                          alt={product.name}
+                          className="w-12 h-12 object-cover rounded"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-medium text-sm truncate">{product.name}</h3>
+                          <Badge variant={product.status === 'ACTIVE' ? 'default' : 'outline'} className="text-xs flex-shrink-0">
+                            {product.status}
+                          </Badge>
+                        </div>
+                        <div className="flex gap-4 text-xs text-muted-foreground">
+                          <span>💰 {formatCurrency(product.priceCents)}</span>
+                          <span>📦 {product.stockQuantity} in stock</span>
+                        </div>
+                      </div>
+                    </div>
+                    <Link href={`/admin/products/${product.id}/edit`}>
+                      <Button variant="ghost" size="sm">
+                        Edit
+                      </Button>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <p className="mb-4">No products yet</p>
+                <Link href="/admin/products/new">
+                  <Button size="sm">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create First Product
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
@@ -193,6 +278,21 @@ async function getDashboardData() {
             _count: { select: { bids: true } },
           },
         },
+      },
+    })
+    
+    // Fetch products sorted by creation date
+    const products = await prisma.product.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        name: true,
+        priceCents: true,
+        stockQuantity: true,
+        status: true,
+        mediaUrls: true,
+        createdAt: true,
       },
     })
     
@@ -249,12 +349,22 @@ async function getDashboardData() {
       .filter(a => getAuctionStatus(a) === 'LIVE')
       .map(a => a.id)
     
+    // Get product counts
+    const allProducts = await prisma.product.findMany({
+      select: {
+        id: true,
+        status: true,
+      },
+    })
+    
     const stats = {
       totalAuctions: allAuctions.length,
       publishedAuctions: allAuctions.filter(a => a.published).length,
       liveAuctions: liveAuctionIds.length,
       totalLots: allLots.length,
       publishedLots: allLots.filter(l => l.published).length,
+      totalProducts: allProducts.length,
+      activeProducts: allProducts.filter(p => p.status === 'ACTIVE').length,
       totalBids: allLots.reduce((sum, l) => sum + (l._count?.bids || 0), 0),
       totalCurrentBids: allLots.reduce((sum, l) => sum + (l.currentBidCents || 0), 0),
       activeBids: allLots
@@ -371,17 +481,20 @@ async function getDashboardData() {
         })
       )
       
-      return { auctions: auctionsWithStats, stats }
+      return { auctions: auctionsWithStats, products: [], stats }
     } catch (supabaseError) {
       console.error('Supabase also failed:', supabaseError)
       return {
         auctions: [],
+        products: [],
         stats: {
           totalAuctions: 0,
           publishedAuctions: 0,
           liveAuctions: 0,
           totalLots: 0,
           publishedLots: 0,
+          totalProducts: 0,
+          activeProducts: 0,
           totalBids: 0,
           totalCurrentBids: 0,
           activeBids: 0,
