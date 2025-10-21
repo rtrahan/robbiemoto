@@ -241,8 +241,17 @@ export default function NewProductPage() {
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <Label>Description</Label>
+                  <Label className="mb-2">Description</Label>
+                  <Textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Describe your product..."
+                    rows={6}
+                  />
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-xs text-muted-foreground">
+                      Upload images first, then generate with AI
+                    </p>
                     <Button
                       type="button"
                       variant="outline"
@@ -258,20 +267,11 @@ export default function NewProductPage() {
                       ) : (
                         <>
                           <Sparkles className="h-3 w-3 mr-2" />
-                          AI Generate {mediaUrls.length > 0 ? '✓' : ''}
+                          AI Generate
                         </>
                       )}
                     </Button>
                   </div>
-                  <Textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Describe your product..."
-                    rows={6}
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Click AI Generate to create a description automatically
-                  </p>
                 </div>
 
                 <div>
