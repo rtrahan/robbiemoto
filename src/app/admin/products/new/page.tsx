@@ -258,42 +258,81 @@ export default function NewProductPage() {
                 </div>
               )}
               
-              <label className="border-2 border-dashed rounded-lg p-8 text-center block cursor-pointer hover:border-gray-400 transition-colors">
-                <input
-                  type="file"
-                  accept="image/*,video/*"
-                  multiple
-                  onChange={async (e) => {
-                    const files = Array.from(e.target.files || [])
-                    if (files.length === 0) return
-                    
-                    toast.info('Uploading...')
-                    
-                    const formData = new FormData()
-                    files.forEach(file => formData.append('files', file))
-                    
-                    try {
-                      const response = await fetch('/api/upload', {
-                        method: 'POST',
-                        body: formData,
-                      })
+              <div className="space-y-4">
+                <label className="border-2 border-dashed rounded-lg p-8 text-center block cursor-pointer hover:border-gray-400 transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*,video/*"
+                    multiple
+                    onChange={async (e) => {
+                      const files = Array.from(e.target.files || [])
+                      if (files.length === 0) return
                       
-                      if (response.ok) {
-                        const { urls } = await response.json()
-                        setMediaUrls([...mediaUrls, ...urls])
-                        toast.success(`${urls.length} file(s) uploaded!`)
-                        e.target.value = ''
+                      toast.info('Uploading...')
+                      
+                      const formData = new FormData()
+                      files.forEach(file => formData.append('files', file))
+                      
+                      try {
+                        const response = await fetch('/api/upload', {
+                          method: 'POST',
+                          body: formData,
+                        })
+                        
+                        const result = await response.json()
+                        
+                        if (response.ok && result.urls) {
+                          setMediaUrls([...mediaUrls, ...result.urls])
+                          toast.success(`${result.urls.length} file(s) uploaded!`)
+                          e.target.value = ''
+                        } else {
+                          throw new Error(result.error || 'Upload failed')
+                        }
+                      } catch (error) {
+                        console.error('Upload error:', error)
+                        toast.error(error instanceof Error ? error.message : 'Upload failed')
                       }
-                    } catch (error) {
-                      toast.error('Upload failed')
-                    }
-                  }}
-                  className="hidden"
-                />
-                <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-sm text-gray-600 mb-2">Click to upload images or videos</p>
-                <p className="text-xs text-gray-400">Supports JPG, PNG, MP4, MOV</p>
-              </label>
+                    }}
+                    className="hidden"
+                  />
+                  <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-sm text-gray-600 mb-2">Click to upload images or videos</p>
+                  <p className="text-xs text-gray-400">Supports JPG, PNG, MP4, MOV</p>
+                </label>
+                
+                <div className="text-center text-xs text-gray-500">
+                  Or add image URL directly:
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="https://example.com/image.jpg"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const input = e.target as HTMLInputElement
+                        if (input.value.trim()) {
+                          setMediaUrls([...mediaUrls, input.value.trim()])
+                          input.value = ''
+                          toast.success('Image URL added!')
+                        }
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={(e) => {
+                      const input = (e.target as HTMLElement).previousElementSibling as HTMLInputElement
+                      if (input?.value.trim()) {
+                        setMediaUrls([...mediaUrls, input.value.trim()])
+                        input.value = ''
+                        toast.success('Image URL added!')
+                      }
+                    }}
+                  >
+                    Add
+                  </Button>
+                </div>
+              </div>
             </Card>
           </div>
 
