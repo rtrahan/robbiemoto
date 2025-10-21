@@ -31,20 +31,19 @@ export default function EditProductPage() {
   })
   const [mediaUrls, setMediaUrls] = useState<string[]>([])
   
-  // Product characteristics and their variants
-  const [productCharacteristics, setProductCharacteristics] = useState<{
-    hasLeather: boolean
-    hasFur: boolean
-    hasFabric: boolean
-  }>({
-    hasLeather: false,
-    hasFur: false,
-    hasFabric: false,
-  })
+  // Product characteristics selected
+  const [selectedCharacteristics, setSelectedCharacteristics] = useState<string[]>([])
   
-  const [leatherVariants, setLeatherVariants] = useState<string[]>([])
-  const [furVariants, setFurVariants] = useState<string[]>([])
-  const [fabricVariants, setFabricVariants] = useState<string[]>([])
+  // Variants for each characteristic
+  const [characteristicVariants, setCharacteristicVariants] = useState<Record<string, Array<{
+    name: string
+    description: string
+    imageUrl: string
+  }>>>({
+    Leather: [],
+    Fur: [],
+    Fabric: [],
+  })
   
   // Customization state
   const [customization, setCustomization] = useState({
@@ -76,14 +75,13 @@ export default function EditProductPage() {
         
         // Load variants
         if (product.variants) {
-          setProductCharacteristics(product.variants.characteristics || {
-            hasLeather: false,
-            hasFur: false,
-            hasFabric: false,
+          const chars = Object.keys(product.variants).filter(k => ['Leather', 'Fur', 'Fabric'].includes(k))
+          setSelectedCharacteristics(chars)
+          setCharacteristicVariants({
+            Leather: product.variants.Leather || [],
+            Fur: product.variants.Fur || [],
+            Fabric: product.variants.Fabric || [],
           })
-          setLeatherVariants(product.variants.leather || [])
-          setFurVariants(product.variants.fur || [])
-          setFabricVariants(product.variants.fabric || [])
         }
         
         // Load customization options
@@ -151,15 +149,15 @@ export default function EditProductPage() {
 
     setIsLoading(true)
     try {
-      // Build variants structure from characteristics
-      const variantsData = {
-        characteristics: productCharacteristics,
-        leather: productCharacteristics.hasLeather ? leatherVariants : null,
-        fur: productCharacteristics.hasFur ? furVariants : null,
-        fabric: productCharacteristics.hasFabric ? fabricVariants : null,
-      }
+      // Build variants structure with only selected characteristics
+      const variantsData: Record<string, any> = {}
+      selectedCharacteristics.forEach(char => {
+        if (characteristicVariants[char]?.length > 0) {
+          variantsData[char] = characteristicVariants[char]
+        }
+      })
       
-      const hasAnyVariants = productCharacteristics.hasLeather || productCharacteristics.hasFur || productCharacteristics.hasFabric
+      const hasAnyVariants = Object.keys(variantsData).length > 0
       
       const response = await fetch(`/api/admin/products`, {
         method: 'PUT',
