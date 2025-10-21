@@ -190,20 +190,27 @@ export default function NewProductPage() {
               
               {mediaUrls.length > 0 && (
                 <div className="grid grid-cols-4 gap-2">
-                  {mediaUrls.map((url, index) => (
-                    <div key={index} className="relative aspect-square bg-gray-100 rounded overflow-hidden group">
-                      <img src={url} alt={`${index + 1}`} className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setMediaUrls(mediaUrls.filter((_, i) => i !== index))}
-                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
+                  {mediaUrls.map((url, index) => {
+                    const isVideo = url.includes('vid-') || url.match(/\.(mp4|mov|webm|ogg)$/i)
+                    return (
+                      <div key={index} className="relative bg-gray-100 rounded overflow-hidden group" style={{ aspectRatio: '4/3' }}>
+                        {isVideo ? (
+                          <video src={url} className="w-full h-full object-contain" controls />
+                        ) : (
+                          <img src={url} alt={`${index + 1}`} className="w-full h-full object-contain" />
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setMediaUrls(mediaUrls.filter((_, i) => i !== index))}
+                          className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    )
+                  })}
                 </div>
               )}
             </Card>
