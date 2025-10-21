@@ -337,10 +337,171 @@ export default function EditProductPage() {
 
           {/* Product Characteristics & Variants */}
           <Card className="p-6">
-            <h2 className="font-semibold mb-4">Product Characteristics (Optional)</h2>
+            <h2 className="font-semibold mb-4">Product Characteristics & Variants (Optional)</h2>
             <p className="text-sm text-muted-foreground mb-4">
-              Select what materials/components this product has, then define the color/type options for each.
+              Select what materials this product has, then add variants (with images) for each.
             </p>
+            
+            {/* Select Characteristics */}
+            <div className="mb-6">
+              <Label className="mb-2">Product Characteristics</Label>
+              <div className="flex gap-4 flex-wrap">
+                {['Leather', 'Fur', 'Fabric'].map((char) => (
+                  <label key={char} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedCharacteristics.includes(char)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedCharacteristics([...selectedCharacteristics, char])
+                        } else {
+                          setSelectedCharacteristics(selectedCharacteristics.filter(c => c !== char))
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-gray-300"
+                    />
+                    <span className="text-sm font-medium">{char}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Variants for each selected characteristic */}
+            {selectedCharacteristics.length > 0 && (
+              <div className="space-y-6">
+                {selectedCharacteristics.map((characteristic) => (
+                  <div key={characteristic} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-medium">{characteristic} Variants</h3>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setCharacteristicVariants({
+                            ...characteristicVariants,
+                            [characteristic]: [
+                              ...(characteristicVariants[characteristic] || []),
+                              { name: '', description: '', imageUrl: '' }
+                            ]
+                          })
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add {characteristic} Variant
+                      </Button>
+                    </div>
+
+                    {characteristicVariants[characteristic]?.length > 0 ? (
+                      <div className="space-y-4">
+                        {characteristicVariants[characteristic].map((variant, variantIndex) => (
+                          <div key={variantIndex} className="border rounded p-3 bg-gray-50 space-y-3">
+                            <div className="flex items-start gap-2">
+                              <div className="flex-1 space-y-2">
+                                <Input
+                                  placeholder={`Name (e.g., Cognac Brown, White Fur)`}
+                                  value={variant.name}
+                                  onChange={(e) => {
+                                    const newVariants = [...characteristicVariants[characteristic]]
+                                    newVariants[variantIndex].name = e.target.value
+                                    setCharacteristicVariants({ ...characteristicVariants, [characteristic]: newVariants })
+                                  }}
+                                />
+                                <Input
+                                  placeholder="Description (optional)"
+                                  value={variant.description}
+                                  onChange={(e) => {
+                                    const newVariants = [...characteristicVariants[characteristic]]
+                                    newVariants[variantIndex].description = e.target.value
+                                    setCharacteristicVariants({ ...characteristicVariants, [characteristic]: newVariants })
+                                  }}
+                                />
+                                {variant.imageUrl && (
+                                  <div className="relative w-20 h-20 rounded overflow-hidden">
+                                    <img src={variant.imageUrl} className="w-full h-full object-cover" alt={variant.name} />
+                                  </div>
+                                )}
+                                <label className="cursor-pointer">
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0]
+                                      if (!file) return
+                                      
+                                      const uploadingToast = toast.loading('Uploading variant image...')
+                                      
+                                      try {
+                                        const { createClient } = await import('@supabase/supabase-js')
+                                        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+                                        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+                                        const supabase = createClient(supabaseUrl, supabaseKey)
+                                        
+                                        const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+                                        const sanitizedExt = fileExt.replace(/[^a-z0-9]/g, '')
+                                        const timestamp = Date.now()
+                                        const randomStr = Math.random().toString(36).substring(2, 11)
+                                        const fileName = `img-${timestamp}-${randomStr}.${sanitizedExt}`
+                                        
+                                        const { error } = await supabase.storage
+                                          .from('product-media')
+                                          .upload(fileName, file, {
+                                            cacheControl: '3600',
+                                            upsert: false
+                                          })
+                                        
+                                        if (error) throw error
+                                        
+                                        const { data: { publicUrl } } = supabase.storage
+                                          .from('product-media')
+                                          .getPublicUrl(fileName)
+                                        
+                                        const newVariants = [...characteristicVariants[characteristic]]
+                                        newVariants[variantIndex].imageUrl = publicUrl
+                                        setCharacteristicVariants({ ...characteristicVariants, [characteristic]: newVariants })
+                                        
+                                        toast.success('Image uploaded!', { id: uploadingToast })
+                                        e.target.value = ''
+                                      } catch (error) {
+                                        console.error('Upload error:', error)
+                                        toast.error('Upload failed', { id: uploadingToast })
+                                      }
+                                    }}
+                                    style={{ display: 'none' }}
+                                  />
+                                  <Button type="button" variant="outline" size="sm" asChild>
+                                    <span>
+                                      <Upload className="h-3 w-3 mr-2" />
+                                      {variant.imageUrl ? 'Change Image' : 'Upload Image'}
+                                    </span>
+                                  </Button>
+                                </label>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const newVariants = characteristicVariants[characteristic].filter((_, i) => i !== variantIndex)
+                                  setCharacteristicVariants({ ...characteristicVariants, [characteristic]: newVariants })
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground text-center py-4">
+                        No {characteristic.toLowerCase()} variants yet. Click "Add {characteristic} Variant" above.
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
             
             <div className="space-y-6">
               {/* Leather */}
