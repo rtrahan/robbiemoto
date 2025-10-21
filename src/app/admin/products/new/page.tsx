@@ -140,29 +140,41 @@ export default function NewProductPage() {
                       const files = Array.from(e.target.files || [])
                       if (files.length === 0) return
                       
-                      toast.info('Uploading...')
-                      
-                      const formData = new FormData()
-                      files.forEach(file => formData.append('files', file))
+                      const uploadingToast = toast.loading(`Uploading ${files.length} file(s)...`)
                       
                       try {
-                        const response = await fetch('/api/upload', {
-                          method: 'POST',
-                          body: formData,
+                        // Upload each file separately (same as auction page)
+                        const uploadPromises = files.map(async (file) => {
+                          const formData = new FormData()
+                          formData.append('file', file)
+                          
+                          const response = await fetch('/api/upload', {
+                            method: 'POST',
+                            body: formData,
+                          })
+                          
+                          const result = await response.json()
+                          
+                          if (!response.ok) {
+                            throw new Error(result.error || result.hint || `Failed to upload ${file.name}`)
+                          }
+                          
+                          return result.url || result.urls?.[0]
                         })
                         
-                        const result = await response.json()
+                        const urls = await Promise.all(uploadPromises)
                         
-                        if (response.ok && result.urls) {
-                          setMediaUrls([...mediaUrls, ...result.urls])
-                          toast.success(`${result.urls.length} file(s) uploaded!`)
-                          e.target.value = ''
-                        } else {
-                          throw new Error(result.error || 'Upload failed')
-                        }
+                        setMediaUrls([...mediaUrls, ...urls])
+                        toast.success(`Uploaded ${urls.length} file(s)!`, {
+                          id: uploadingToast,
+                        })
+                        e.target.value = ''
                       } catch (error) {
                         console.error('Upload error:', error)
-                        toast.error(error instanceof Error ? error.message : 'Upload failed')
+                        toast.error('Upload failed', {
+                          id: uploadingToast,
+                          description: error instanceof Error ? error.message : 'Unknown error'
+                        })
                       }
                     }}
                     style={{ display: 'none' }}
