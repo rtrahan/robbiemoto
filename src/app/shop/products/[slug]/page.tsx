@@ -1,22 +1,54 @@
-import { notFound } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { notFound, useParams } from 'next/navigation'
 import { AuthHeader } from '@/components/auth-header'
 import { formatCurrency } from '@/lib/helpers'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
-interface PageProps {
-  params: Promise<{ slug: string }>
-}
-
-export default async function ProductPage({ params }: PageProps) {
-  const { slug } = await params
+export default function ProductPage() {
+  const params = useParams()
+  const slug = params.slug as string
+  const [product, setProduct] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [selectedMediaIndex, setSelectedMediaIndex] = useState(0)
   
-  const product = await getProduct(slug)
+  useEffect(() => {
+    fetchProduct()
+  }, [slug])
+  
+  const fetchProduct = async () => {
+    try {
+      const response = await fetch(`/api/products/${slug}`)
+      if (response.ok) {
+        const data = await response.json()
+        setProduct(data)
+      } else {
+        setProduct(null)
+      }
+    } catch (error) {
+      console.error('Failed to fetch product:', error)
+      setProduct(null)
+    } finally {
+      setLoading(false)
+    }
+  }
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-gray-400">Loading...</div>
+      </div>
+    )
+  }
   
   if (!product) {
     notFound()
   }
+  
+  const selectedMedia = product.mediaUrls?.[selectedMediaIndex]
+  const isSelectedVideo = selectedMedia?.includes('vid-') || selectedMedia?.match(/\.(mp4|mov|webm|ogg)$/i)
   
   return (
     <div className="min-h-screen bg-white">
@@ -41,21 +73,63 @@ export default async function ProductPage({ params }: PageProps) {
           </Link>
 
           <div className="grid md:grid-cols-2 gap-12">
-            {/* Product Images */}
+            {/* Product Media Gallery */}
             <div>
-              <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden sticky top-24">
-                {product.mediaUrls && Array.isArray(product.mediaUrls) && product.mediaUrls.length > 0 ? (
-                  <img 
-                    src={String(product.mediaUrls[0])} 
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
+              <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4 sticky top-24">
+                {selectedMedia ? (
+                  isSelectedVideo ? (
+                    <video
+                      key={selectedMedia}
+                      src={selectedMedia}
+                      className="w-full h-full object-contain"
+                      controls
+                      autoPlay
+                      loop
+                      muted
+                    />
+                  ) : (
+                    <img 
+                      src={selectedMedia} 
+                      alt={product.name}
+                      className="w-full h-full object-contain"
+                    />
+                  )
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-9xl opacity-10">
                     🏺
                   </div>
                 )}
               </div>
+              
+              {/* Thumbnails */}
+              {product.mediaUrls && product.mediaUrls.length > 1 && (
+                <div className="grid grid-cols-5 gap-2">
+                  {product.mediaUrls.map((url: string, index: number) => {
+                    const isVideo = url.includes('vid-') || url.match(/\.(mp4|mov|webm|ogg)$/i)
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedMediaIndex(index)}
+                        className={`aspect-square bg-gray-100 rounded overflow-hidden border-2 transition-all ${
+                          index === selectedMediaIndex ? 'border-gray-900' : 'border-transparent hover:border-gray-400'
+                        }`}
+                      >
+                        {isVideo ? (
+                          <div className="w-full h-full flex items-center justify-center text-2xl">
+                            ▶️
+                          </div>
+                        ) : (
+                          <img 
+                            src={url} 
+                            alt={`${product.name} ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Product Info */}
@@ -121,16 +195,4 @@ export default async function ProductPage({ params }: PageProps) {
   )
 }
 
-async function getProduct(slug: string) {
-  try {
-    const product = await prisma.product.findUnique({
-      where: { slug },
-    })
-    
-    return product
-  } catch (error) {
-    console.error('Error fetching product:', error)
-    return null
-  }
-}
 
