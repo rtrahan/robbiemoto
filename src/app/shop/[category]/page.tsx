@@ -9,19 +9,17 @@ interface PageProps {
 }
 
 const categoryMap: Record<string, string> = {
-  'men': 'MEN',
-  'women': 'WOMEN',
-  'leather-goods': 'LEATHER_GOODS',
-  'unisex': 'UNISEX',
   'ceramics': 'CERAMICS',
+  'leather': 'LEATHER',
+  'accessories': 'ACCESSORIES',
+  'other': 'OTHER',
 }
 
 const categoryNames: Record<string, string> = {
-  'men': 'Men',
-  'women': 'Women',
-  'leather-goods': 'Leather Goods',
-  'unisex': 'Unisex',
   'ceramics': 'Ceramics',
+  'leather': 'Leather Goods',
+  'accessories': 'Accessories',
+  'other': 'Other',
 }
 
 export default async function CategoryPage({ params }: PageProps) {
@@ -128,16 +126,32 @@ async function getProducts(category: string) {
         category: category as any,
         status: 'ACTIVE',
       },
-      orderBy: [
-        { featured: 'desc' },
-        { sortOrder: 'asc' },
-      ],
+      orderBy: {
+        createdAt: 'desc',
+      },
     })
     
     return products
   } catch (error) {
-    console.error('Error fetching products:', error)
-    return []
+    console.error('Prisma failed, trying Supabase:', error)
+    // Fallback to Supabase
+    try {
+      const { supabaseServer } = await import('@/lib/supabase-server')
+      if (!supabaseServer) return []
+      
+      const { data } = await supabaseServer
+        .from('Product')
+        .select('*')
+        .eq('category', category)
+        .eq('status', 'ACTIVE')
+        .order('createdAt', { ascending: false })
+      
+      console.log(`Found ${data?.length || 0} products in category ${category}`)
+      return data || []
+    } catch (supabaseError) {
+      console.error('Supabase also failed:', supabaseError)
+      return []
+    }
   }
 }
 
