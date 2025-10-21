@@ -191,22 +191,44 @@ export default function EditProductPage() {
                     const uploadingToast = toast.loading(`Uploading ${files.length} file(s)...`)
                     
                     try {
+                      // Import Supabase client for direct browser upload (bypasses Vercel)
+                      const { createClient } = await import('@supabase/supabase-js')
+                      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+                      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+                      const supabase = createClient(supabaseUrl, supabaseKey)
+                      
                       const uploadPromises = files.map(async (file) => {
-                        const formData = new FormData()
-                        formData.append('file', file)
+                        // Sanitize filename for Supabase
+                        const fileExt = file.name.split('.').pop()?.toLowerCase() || 'bin'
+                        const sanitizedExt = fileExt.replace(/[^a-z0-9]/g, '')
+                        const timestamp = Date.now()
+                        const randomStr = Math.random().toString(36).substring(2, 11)
+                        const isVideo = file.type.startsWith('video/')
+                        const prefix = isVideo ? 'vid' : 'img'
+                        const fileName = `${prefix}-${timestamp}-${randomStr}.${sanitizedExt}`
                         
-                        const response = await fetch('/api/upload', {
-                          method: 'POST',
-                          body: formData,
-                        })
+                        console.log(`Uploading ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB) directly to Supabase...`)
                         
-                        const result = await response.json()
+                        // Direct upload to Supabase Storage (no Vercel limits!)
+                        const { data, error } = await supabase.storage
+                          .from('product-media')
+                          .upload(fileName, file, {
+                            cacheControl: '3600',
+                            upsert: false
+                          })
                         
-                        if (!response.ok) {
-                          throw new Error(result.error || result.hint || `Failed to upload ${file.name}`)
+                        if (error) {
+                          console.error('Supabase upload error:', error)
+                          throw new Error(`Upload failed: ${error.message}`)
                         }
                         
-                        return result.url || result.urls?.[0]
+                        // Get public URL
+                        const { data: { publicUrl } } = supabase.storage
+                          .from('product-media')
+                          .getPublicUrl(fileName)
+                        
+                        console.log(`✅ Uploaded successfully: ${publicUrl}`)
+                        return publicUrl
                       })
                       
                       const urls = await Promise.all(uploadPromises)
