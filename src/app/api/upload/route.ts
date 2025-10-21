@@ -31,27 +31,41 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Get Supabase config
+    // Get Supabase config - use direct URL if DATABASE_URL not available
     const dbUrl = process.env.DATABASE_URL || ''
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     
+    console.log('Config check:', {
+      hasDatabaseUrl: !!dbUrl,
+      hasAnonKey: !!supabaseAnonKey,
+      hasSupabaseUrl: !!supabaseUrl,
+    })
+    
+    // Try to get project ID from DATABASE_URL or use direct URL
     const match = dbUrl.match(/db\.([^.]+)\.supabase\.co/)
-    const projectId = match ? match[1] : null
+    const projectId = match ? match[1] : (supabaseUrl ? supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] : null)
     
-    if (!projectId || !supabaseAnonKey) {
-      // Return mock URLs for development
-      const mockUrls = filesToUpload.map(file => 
-        `https://utfs.io/f/${file.name.replace(/\s+/g, '-')}-${Date.now()}`
-      )
+    if (!supabaseAnonKey) {
+      console.error('❌ NEXT_PUBLIC_SUPABASE_ANON_KEY is missing!')
       return NextResponse.json({ 
-        urls: mockUrls,
-        url: mockUrls[0], // For backwards compatibility
-        success: true 
-      })
+        error: 'Supabase not configured - missing ANON_KEY',
+        hint: 'Add NEXT_PUBLIC_SUPABASE_ANON_KEY to Vercel environment variables',
+      }, { status: 500 })
     }
     
-    const supabaseUrl = `https://${projectId}.supabase.co`
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    if (!projectId && !supabaseUrl) {
+      console.error('❌ Cannot determine Supabase URL!')
+      return NextResponse.json({ 
+        error: 'Supabase not configured - missing URL',
+        hint: 'Add NEXT_PUBLIC_SUPABASE_URL to Vercel environment variables',
+      }, { status: 500 })
+    }
+    
+    const finalSupabaseUrl = supabaseUrl || `https://${projectId}.supabase.co`
+    console.log('Using Supabase URL:', finalSupabaseUrl)
+    
+    const supabase = createClient(finalSupabaseUrl, supabaseAnonKey)
 
     // Determine which bucket to use
     const bucketName = lotId ? 'auction-media' : 'product-media'
