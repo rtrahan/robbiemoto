@@ -72,6 +72,14 @@ model Product {
   
   mediaUrls       Json?          // Product images
   
+  // Product Variants (e.g., leather colors, fur options)
+  // Format: { options: [{ name: 'Leather Color', values: ['Brown', 'Black'] }], variants: [{ options: { 'Leather Color': 'Brown' }, image: 'url', sku: 'xxx' }] }
+  variants        Json?
+  
+  // Customization Options (e.g., monogram)
+  // Format: { monogram: { enabled: true, types: ['initials', 'date'] } }
+  customizationOptions Json?
+  
   // Inventory
   stockQuantity   Int            @default(0)
   trackInventory  Boolean        @default(true)

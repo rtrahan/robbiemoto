@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { ArrowLeft, Sparkles, Loader2, Upload } from 'lucide-react'
+import { ArrowLeft, Sparkles, Loader2, Upload, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
 export default function NewProductPage() {
@@ -27,6 +27,16 @@ export default function NewProductPage() {
     status: 'ACTIVE',
   })
   const [mediaUrls, setMediaUrls] = useState<string[]>([])
+  
+  // Variants state
+  const [variantOptions, setVariantOptions] = useState<Array<{name: string, values: string[]}>>([])
+  const [variants, setVariants] = useState<Array<{options: Record<string, string>, image: string, sku?: string}>>([])
+  
+  // Customization state
+  const [customization, setCustomization] = useState({
+    monogramEnabled: false,
+    monogramTypes: ['initials', 'date'] as string[],
+  })
 
   const generateDescription = async () => {
     if (mediaUrls.length === 0) {
@@ -85,6 +95,8 @@ export default function NewProductPage() {
           ...formData,
           slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
           mediaUrls,
+          variants: variantOptions.length > 0 ? { options: variantOptions, variants } : null,
+          customizationOptions: customization.monogramEnabled ? customization : null,
         }),
       })
 
@@ -245,6 +257,117 @@ export default function NewProductPage() {
                   })}
                 </div>
               )}
+            </Card>
+
+            {/* Product Variants */}
+            <Card className="p-6">
+              <h2 className="font-semibold mb-4">Product Variants (Optional)</h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Add options like leather color, fur type, etc. Upload an image for each variant combination.
+              </p>
+              
+              {/* Variant Options (Leather Color, Fur Type, etc.) */}
+              <div className="space-y-4">
+                {variantOptions.map((option, optionIndex) => (
+                  <div key={optionIndex} className="border rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Input
+                        placeholder="Option name (e.g., Leather Color)"
+                        value={option.name}
+                        onChange={(e) => {
+                          const newOptions = [...variantOptions]
+                          newOptions[optionIndex].name = e.target.value
+                          setVariantOptions(newOptions)
+                        }}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setVariantOptions(variantOptions.filter((_, i) => i !== optionIndex))}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Values (comma separated: Brown, Black, Tan)"
+                        value={option.values.join(', ')}
+                        onChange={(e) => {
+                          const newOptions = [...variantOptions]
+                          newOptions[optionIndex].values = e.target.value.split(',').map(v => v.trim()).filter(Boolean)
+                          setVariantOptions(newOptions)
+                        }}
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                ))}
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setVariantOptions([...variantOptions, { name: '', values: [] }])}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Variant Option
+                </Button>
+              </div>
+            </Card>
+
+            {/* Customization Options */}
+            <Card className="p-6">
+              <h2 className="font-semibold mb-4">Customization Options</h2>
+              
+              <div className="space-y-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={customization.monogramEnabled}
+                    onChange={(e) => setCustomization({ ...customization, monogramEnabled: e.target.checked })}
+                    className="w-4 h-4 rounded border-gray-300"
+                  />
+                  <span className="text-sm font-medium">Offer Monogram/Personalization</span>
+                </label>
+                
+                {customization.monogramEnabled && (
+                  <div className="pl-6 space-y-2">
+                    <p className="text-xs text-muted-foreground">Customers can choose:</p>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={customization.monogramTypes.includes('initials')}
+                          onChange={(e) => {
+                            const types = e.target.checked 
+                              ? [...customization.monogramTypes, 'initials']
+                              : customization.monogramTypes.filter(t => t !== 'initials')
+                            setCustomization({ ...customization, monogramTypes: types })
+                          }}
+                          className="w-4 h-4 rounded border-gray-300"
+                        />
+                        <span className="text-sm">Initials</span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={customization.monogramTypes.includes('date')}
+                          onChange={(e) => {
+                            const types = e.target.checked 
+                              ? [...customization.monogramTypes, 'date']
+                              : customization.monogramTypes.filter(t => t !== 'date')
+                            setCustomization({ ...customization, monogramTypes: types })
+                          }}
+                          className="w-4 h-4 rounded border-gray-300"
+                        />
+                        <span className="text-sm">Date</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+              </div>
             </Card>
 
             <Card className="p-6">

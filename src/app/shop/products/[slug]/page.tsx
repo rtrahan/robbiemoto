@@ -14,6 +14,13 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true)
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0)
   
+  // Variant selection state
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({})
+  
+  // Monogram customization state
+  const [monogramType, setMonogramType] = useState('none')
+  const [monogramText, setMonogramText] = useState('')
+  
   useEffect(() => {
     fetchProduct()
   }, [slug])
@@ -154,6 +161,94 @@ export default function ProductPage() {
                   <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                     {product.description}
                   </p>
+                </div>
+              )}
+
+              {/* Variant Selection */}
+              {product.variants?.options && product.variants.options.length > 0 && (
+                <div className="space-y-4 pt-6 border-t">
+                  {product.variants.options.map((option: any, index: number) => (
+                    <div key={index}>
+                      <label className="block text-sm font-medium mb-2">{option.name}</label>
+                      <select
+                        value={selectedVariants[option.name] || ''}
+                        onChange={(e) => setSelectedVariants({ ...selectedVariants, [option.name]: e.target.value })}
+                        className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      >
+                        <option value="">Select {option.name}</option>
+                        {option.values.map((value: string) => (
+                          <option key={value} value={value}>
+                            {value}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Monogram Customization */}
+              {product.customizationOptions?.monogramEnabled && (
+                <div className="space-y-4 pt-6 border-t">
+                  <h3 className="font-medium">Personalization (Optional)</h3>
+                  
+                  <div className="space-y-3">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="monogram"
+                        value="none"
+                        checked={monogramType === 'none'}
+                        onChange={(e) => setMonogramType(e.target.value)}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">No personalization</span>
+                    </label>
+                    
+                    {product.customizationOptions.monogramTypes?.includes('initials') && (
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="monogram"
+                          value="initials"
+                          checked={monogramType === 'initials'}
+                          onChange={(e) => setMonogramType(e.target.value)}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-sm">Add initials</span>
+                      </label>
+                    )}
+                    
+                    {product.customizationOptions.monogramTypes?.includes('date') && (
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="monogram"
+                          value="date"
+                          checked={monogramType === 'date'}
+                          onChange={(e) => setMonogramType(e.target.value)}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-sm">Add date</span>
+                      </label>
+                    )}
+                    
+                    {monogramType !== 'none' && (
+                      <div className="pl-6">
+                        <input
+                          type="text"
+                          placeholder={monogramType === 'initials' ? 'Enter initials (e.g., JDM)' : 'Enter date (e.g., 10.21.2025)'}
+                          value={monogramText}
+                          onChange={(e) => setMonogramText(e.target.value)}
+                          maxLength={20}
+                          className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {monogramType === 'initials' ? 'Up to 3-4 characters recommended' : 'Format as you want it displayed'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
