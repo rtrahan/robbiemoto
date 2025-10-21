@@ -71,9 +71,27 @@ Focus on artisanal, warm language. Highlight what makes it special.`
     
     console.log('Cleaned content:', cleanContent)
     
-    const result = JSON.parse(cleanContent)
-
-    return NextResponse.json(result)
+    // Try to parse JSON, but handle errors gracefully
+    try {
+      const result = JSON.parse(cleanContent)
+      return NextResponse.json(result)
+    } catch (parseError) {
+      // If JSON parsing fails, the AI might have returned an error message
+      console.error('JSON Parse Error:', parseError)
+      console.error('Content that failed to parse:', cleanContent)
+      
+      // Check if it's an apology/error message from the model
+      if (cleanContent.toLowerCase().includes("i'm sorry") || cleanContent.toLowerCase().includes("cannot") || cleanContent.toLowerCase().includes("unable")) {
+        return NextResponse.json({ 
+          error: 'AI could not analyze the image. The image URL might be inaccessible or invalid.',
+          hint: 'Make sure the image is publicly accessible. Try uploading a different image.',
+          aiResponse: cleanContent
+        }, { status: 500 })
+      }
+      
+      // Otherwise return a generic JSON parse error
+      throw new Error(`Failed to parse AI response as JSON: ${cleanContent.substring(0, 100)}`)
+    }
   } catch (error: any) {
     console.error('=== AI GENERATION ERROR ===')
     console.error('Error:', error)
