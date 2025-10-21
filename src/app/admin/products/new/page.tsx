@@ -131,7 +131,7 @@ export default function NewProductPage() {
                   <h2 className="font-semibold">Product Images</h2>
                   <p className="text-xs text-muted-foreground">Upload photos, then AI will help</p>
                 </div>
-                <label>
+                <label className="cursor-pointer">
                   <input
                     type="file"
                     accept="image/*,video/*"
@@ -165,11 +165,13 @@ export default function NewProductPage() {
                         toast.error(error instanceof Error ? error.message : 'Upload failed')
                       }
                     }}
-                    className="hidden"
+                    style={{ display: 'none' }}
                   />
-                  <Button type="button" variant="outline" size="sm">
-                    <Upload className="h-3 w-3 mr-2" />
-                    Upload
+                  <Button type="button" variant="outline" size="sm" asChild>
+                    <span>
+                      <Upload className="h-3 w-3 mr-2" />
+                      Upload
+                    </span>
                   </Button>
                 </label>
               </div>
