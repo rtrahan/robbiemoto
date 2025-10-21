@@ -394,7 +394,7 @@ async function getDashboardData() {
       currentBidTotal: a.currentBidTotal,
     })))
     
-    return { auctions: auctionsWithStats, stats }
+    return { auctions: auctionsWithStats, products, stats }
   } catch (error) {
     // Fallback to Supabase (silent)
     try {
