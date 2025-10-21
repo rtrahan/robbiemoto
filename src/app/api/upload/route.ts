@@ -7,15 +7,28 @@ export async function POST(request: NextRequest) {
     
     const formData = await request.formData()
     
+    // Debug: log all form data keys
+    const keys = Array.from(formData.keys())
+    console.log('FormData keys:', keys)
+    
     // Handle both single file ('file') and multiple files ('files')
     const files = formData.getAll('files') as File[]
     const singleFile = formData.get('file') as File | null
     const lotId = formData.get('lotId') as string | null
     
+    console.log('Files array length:', files.length)
+    console.log('Single file:', singleFile?.name)
+    
     const filesToUpload = files.length > 0 ? files : (singleFile ? [singleFile] : [])
     
+    console.log('Files to upload:', filesToUpload.length)
+    
     if (filesToUpload.length === 0) {
-      return NextResponse.json({ error: 'No files provided' }, { status: 400 })
+      console.error('No files found in FormData')
+      return NextResponse.json({ 
+        error: 'No files provided',
+        keysReceived: keys,
+      }, { status: 400 })
     }
 
     // Get Supabase config
