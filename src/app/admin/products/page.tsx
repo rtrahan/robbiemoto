@@ -148,9 +148,27 @@ async function getProducts() {
     })
     
     return products
-  } catch (error) {
-    console.error('Error fetching products:', error)
-    return []
+  } catch (prismaError) {
+    console.log('Prisma failed, using Supabase for products')
+    
+    try {
+      const { supabaseServer } = await import('@/lib/supabase-server')
+      
+      if (!supabaseServer) {
+        return []
+      }
+      
+      const { data: products } = await supabaseServer
+        .from('Product')
+        .select('*')
+        .order('featured', { ascending: false })
+        .order('createdAt', { ascending: false })
+      
+      return products || []
+    } catch (supabaseError) {
+      console.error('Error fetching products:', supabaseError)
+      return []
+    }
   }
 }
 
