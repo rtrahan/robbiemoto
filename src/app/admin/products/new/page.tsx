@@ -28,9 +28,20 @@ export default function NewProductPage() {
   })
   const [mediaUrls, setMediaUrls] = useState<string[]>([])
   
-  // Variants state
-  const [variantOptions, setVariantOptions] = useState<Array<{name: string, values: string[]}>>([])
-  const [variants, setVariants] = useState<Array<{options: Record<string, string>, image: string, sku?: string}>>([])
+  // Product characteristics and their variants
+  const [productCharacteristics, setProductCharacteristics] = useState<{
+    hasLeather: boolean
+    hasFur: boolean
+    hasFabric: boolean
+  }>({
+    hasLeather: false,
+    hasFur: false,
+    hasFabric: false,
+  })
+  
+  const [leatherVariants, setLeatherVariants] = useState<string[]>([])
+  const [furVariants, setFurVariants] = useState<string[]>([])
+  const [fabricVariants, setFabricVariants] = useState<string[]>([])
   
   // Customization state
   const [customization, setCustomization] = useState({
@@ -88,6 +99,16 @@ export default function NewProductPage() {
 
     setIsLoading(true)
     try {
+      // Build variants structure from characteristics
+      const variantsData = {
+        characteristics: productCharacteristics,
+        leather: productCharacteristics.hasLeather ? leatherVariants : null,
+        fur: productCharacteristics.hasFur ? furVariants : null,
+        fabric: productCharacteristics.hasFabric ? fabricVariants : null,
+      }
+      
+      const hasAnyVariants = productCharacteristics.hasLeather || productCharacteristics.hasFur || productCharacteristics.hasFabric
+      
       const response = await fetch('/api/admin/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -95,7 +116,7 @@ export default function NewProductPage() {
           ...formData,
           slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
           mediaUrls,
-          variants: variantOptions.length > 0 ? { options: variantOptions, variants } : null,
+          variants: hasAnyVariants ? variantsData : null,
           customizationOptions: customization.monogramEnabled ? customization : null,
         }),
       })
@@ -259,61 +280,112 @@ export default function NewProductPage() {
               )}
             </Card>
 
-            {/* Product Variants */}
+            {/* Product Characteristics & Variants */}
             <Card className="p-6">
-              <h2 className="font-semibold mb-4">Product Variants (Optional)</h2>
+              <h2 className="font-semibold mb-4">Product Characteristics (Optional)</h2>
               <p className="text-sm text-muted-foreground mb-4">
-                Add options like leather color, fur type, etc. Upload an image for each variant combination.
+                Select what materials/components this product has, then define the color/type options for each.
               </p>
               
-              {/* Variant Options (Leather Color, Fur Type, etc.) */}
-              <div className="space-y-4">
-                {variantOptions.map((option, optionIndex) => (
-                  <div key={optionIndex} className="border rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
+              <div className="space-y-6">
+                {/* Leather */}
+                <div className="border rounded-lg p-4">
+                  <label className="flex items-center gap-2 mb-3">
+                    <input
+                      type="checkbox"
+                      checked={productCharacteristics.hasLeather}
+                      onChange={(e) => setProductCharacteristics({ ...productCharacteristics, hasLeather: e.target.checked })}
+                      className="w-4 h-4 rounded border-gray-300"
+                    />
+                    <span className="font-medium">This product has Leather</span>
+                  </label>
+                  
+                  {productCharacteristics.hasLeather && (
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-2">Leather Options</Label>
                       <Input
-                        placeholder="Option name (e.g., Leather Color)"
-                        value={option.name}
-                        onChange={(e) => {
-                          const newOptions = [...variantOptions]
-                          newOptions[optionIndex].name = e.target.value
-                          setVariantOptions(newOptions)
-                        }}
-                        className="flex-1"
+                        placeholder="Enter leather colors/types (comma separated: Brown, Black, Tan, Natural)"
+                        value={leatherVariants.join(', ')}
+                        onChange={(e) => setLeatherVariants(e.target.value.split(',').map(v => v.trim()).filter(Boolean))}
                       />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setVariantOptions(variantOptions.filter((_, i) => i !== optionIndex))}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {leatherVariants.length > 0 && (
+                        <div className="flex gap-2 mt-2 flex-wrap">
+                          {leatherVariants.map((variant, i) => (
+                            <span key={i} className="px-2 py-1 bg-gray-100 text-xs rounded">
+                              {variant}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex gap-2">
+                  )}
+                </div>
+
+                {/* Fur */}
+                <div className="border rounded-lg p-4">
+                  <label className="flex items-center gap-2 mb-3">
+                    <input
+                      type="checkbox"
+                      checked={productCharacteristics.hasFur}
+                      onChange={(e) => setProductCharacteristics({ ...productCharacteristics, hasFur: e.target.checked })}
+                      className="w-4 h-4 rounded border-gray-300"
+                    />
+                    <span className="font-medium">This product has Fur</span>
+                  </label>
+                  
+                  {productCharacteristics.hasFur && (
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-2">Fur Options</Label>
                       <Input
-                        placeholder="Values (comma separated: Brown, Black, Tan)"
-                        value={option.values.join(', ')}
-                        onChange={(e) => {
-                          const newOptions = [...variantOptions]
-                          newOptions[optionIndex].values = e.target.value.split(',').map(v => v.trim()).filter(Boolean)
-                          setVariantOptions(newOptions)
-                        }}
-                        className="flex-1"
+                        placeholder="Enter fur colors/types (comma separated: White, Black, Grey, Brown)"
+                        value={furVariants.join(', ')}
+                        onChange={(e) => setFurVariants(e.target.value.split(',').map(v => v.trim()).filter(Boolean))}
                       />
+                      {furVariants.length > 0 && (
+                        <div className="flex gap-2 mt-2 flex-wrap">
+                          {furVariants.map((variant, i) => (
+                            <span key={i} className="px-2 py-1 bg-gray-100 text-xs rounded">
+                              {variant}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
-                
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setVariantOptions([...variantOptions, { name: '', values: [] }])}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Variant Option
-                </Button>
+                  )}
+                </div>
+
+                {/* Fabric */}
+                <div className="border rounded-lg p-4">
+                  <label className="flex items-center gap-2 mb-3">
+                    <input
+                      type="checkbox"
+                      checked={productCharacteristics.hasFabric}
+                      onChange={(e) => setProductCharacteristics({ ...productCharacteristics, hasFabric: e.target.checked })}
+                      className="w-4 h-4 rounded border-gray-300"
+                    />
+                    <span className="font-medium">This product has Fabric/Lining</span>
+                  </label>
+                  
+                  {productCharacteristics.hasFabric && (
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-2">Fabric Options</Label>
+                      <Input
+                        placeholder="Enter fabric colors/patterns (comma separated: Navy, Red, Plaid)"
+                        value={fabricVariants.join(', ')}
+                        onChange={(e) => setFabricVariants(e.target.value.split(',').map(v => v.trim()).filter(Boolean))}
+                      />
+                      {fabricVariants.length > 0 && (
+                        <div className="flex gap-2 mt-2 flex-wrap">
+                          {fabricVariants.map((variant, i) => (
+                            <span key={i} className="px-2 py-1 bg-gray-100 text-xs rounded">
+                              {variant}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </Card>
 

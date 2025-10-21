@@ -14,8 +14,10 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true)
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0)
   
-  // Variant selection state
-  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({})
+  // Variant selection state (for leather, fur, fabric)
+  const [selectedLeather, setSelectedLeather] = useState('')
+  const [selectedFur, setSelectedFur] = useState('')
+  const [selectedFabric, setSelectedFabric] = useState('')
   
   // Monogram customization state
   const [monogramType, setMonogramType] = useState('none')
@@ -165,25 +167,66 @@ export default function ProductPage() {
               )}
 
               {/* Variant Selection */}
-              {product.variants?.options && product.variants.options.length > 0 && (
+              {product.variants && (
                 <div className="space-y-4 pt-6 border-t">
-                  {product.variants.options.map((option: any, index: number) => (
-                    <div key={index}>
-                      <label className="block text-sm font-medium mb-2">{option.name}</label>
+                  <h3 className="font-medium">Select Options</h3>
+                  
+                  {/* Leather Options */}
+                  {product.variants.characteristics?.hasLeather && product.variants.leather?.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Leather Type</label>
                       <select
-                        value={selectedVariants[option.name] || ''}
-                        onChange={(e) => setSelectedVariants({ ...selectedVariants, [option.name]: e.target.value })}
+                        value={selectedLeather}
+                        onChange={(e) => setSelectedLeather(e.target.value)}
                         className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
                       >
-                        <option value="">Select {option.name}</option>
-                        {option.values.map((value: string) => (
-                          <option key={value} value={value}>
-                            {value}
+                        <option value="">Select Leather</option>
+                        {product.variants.leather.map((option: string) => (
+                          <option key={option} value={option}>
+                            {option}
                           </option>
                         ))}
                       </select>
                     </div>
-                  ))}
+                  )}
+                  
+                  {/* Fur Options */}
+                  {product.variants.characteristics?.hasFur && product.variants.fur?.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Fur Type</label>
+                      <select
+                        value={selectedFur}
+                        onChange={(e) => setSelectedFur(e.target.value)}
+                        className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      >
+                        <option value="">Select Fur</option>
+                        {product.variants.fur.map((option: string) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  
+                  {/* Fabric Options */}
+                  {product.variants.characteristics?.hasFabric && product.variants.fabric?.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Fabric/Lining</label>
+                      <select
+                        value={selectedFabric}
+                        onChange={(e) => setSelectedFabric(e.target.value)}
+                        className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      >
+                        <option value="">Select Fabric</option>
+                        {product.variants.fabric.map((option: string) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
               )}
 
