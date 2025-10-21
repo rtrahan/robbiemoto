@@ -140,6 +140,17 @@ export default function NewProductPage() {
                       const files = Array.from(e.target.files || [])
                       if (files.length === 0) return
                       
+                      // Check file sizes before uploading
+                      const MAX_SIZE = 10 * 1024 * 1024 // 10MB limit
+                      const tooLarge = files.filter(f => f.size > MAX_SIZE)
+                      if (tooLarge.length > 0) {
+                        toast.error('File too large', {
+                          description: `${tooLarge.map(f => f.name).join(', ')} exceeds 10MB limit. Please compress your video first.`
+                        })
+                        e.target.value = ''
+                        return
+                      }
+                      
                       const uploadingToast = toast.loading(`Uploading ${files.length} file(s)...`)
                       
                       try {
