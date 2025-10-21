@@ -78,17 +78,27 @@ export async function POST(request: NextRequest) {
         })
 
       if (error) {
-        console.error('Upload error:', error.message)
-        // Return mock URL on error
-        uploadedUrls.push(`https://utfs.io/f/${file.name.replace(/\s+/g, '-')}-${Date.now()}`)
-      } else {
-        const { data: { publicUrl } } = supabase.storage
-          .from(bucketName)
-          .getPublicUrl(fileName)
+        console.error('❌ SUPABASE UPLOAD ERROR:', {
+          message: error.message,
+          name: error.name,
+          bucket: bucketName,
+          file: fileName,
+        })
         
-        console.log('Upload successful, URL:', publicUrl)
-        uploadedUrls.push(publicUrl)
+        // Don't fail silently - throw the error
+        return NextResponse.json({
+          error: `Upload failed: ${error.message}`,
+          hint: 'Check Supabase Storage policies for ' + bucketName,
+          bucket: bucketName,
+        }, { status: 500 })
       }
+      
+      const { data: { publicUrl } } = supabase.storage
+        .from(bucketName)
+        .getPublicUrl(fileName)
+      
+      console.log('✅ Upload successful, URL:', publicUrl)
+      uploadedUrls.push(publicUrl)
     }
 
     return NextResponse.json({
