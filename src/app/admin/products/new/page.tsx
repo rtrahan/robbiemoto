@@ -28,20 +28,20 @@ export default function NewProductPage() {
   })
   const [mediaUrls, setMediaUrls] = useState<string[]>([])
   
-  // Product characteristics and their variants
-  const [productCharacteristics, setProductCharacteristics] = useState<{
-    hasLeather: boolean
-    hasFur: boolean
-    hasFabric: boolean
-  }>({
-    hasLeather: false,
-    hasFur: false,
-    hasFabric: false,
-  })
+  // Product characteristics selected
+  const [selectedCharacteristics, setSelectedCharacteristics] = useState<string[]>([])
   
-  const [leatherVariants, setLeatherVariants] = useState<string[]>([])
-  const [furVariants, setFurVariants] = useState<string[]>([])
-  const [fabricVariants, setFabricVariants] = useState<string[]>([])
+  // Variants for each characteristic
+  // Each variant has: name, description, imageUrl
+  const [characteristicVariants, setCharacteristicVariants] = useState<Record<string, Array<{
+    name: string
+    description: string
+    imageUrl: string
+  }>>>({
+    Leather: [],
+    Fur: [],
+    Fabric: [],
+  })
   
   // Customization state
   const [customization, setCustomization] = useState({
@@ -99,15 +99,15 @@ export default function NewProductPage() {
 
     setIsLoading(true)
     try {
-      // Build variants structure from characteristics
-      const variantsData = {
-        characteristics: productCharacteristics,
-        leather: productCharacteristics.hasLeather ? leatherVariants : null,
-        fur: productCharacteristics.hasFur ? furVariants : null,
-        fabric: productCharacteristics.hasFabric ? fabricVariants : null,
-      }
+      // Build variants structure with only selected characteristics
+      const variantsData: Record<string, any> = {}
+      selectedCharacteristics.forEach(char => {
+        if (characteristicVariants[char]?.length > 0) {
+          variantsData[char] = characteristicVariants[char]
+        }
+      })
       
-      const hasAnyVariants = productCharacteristics.hasLeather || productCharacteristics.hasFur || productCharacteristics.hasFabric
+      const hasAnyVariants = Object.keys(variantsData).length > 0
       
       const response = await fetch('/api/admin/products', {
         method: 'POST',
@@ -282,111 +282,172 @@ export default function NewProductPage() {
 
             {/* Product Characteristics & Variants */}
             <Card className="p-6">
-              <h2 className="font-semibold mb-4">Product Characteristics (Optional)</h2>
+              <h2 className="font-semibold mb-4">Product Characteristics & Variants (Optional)</h2>
               <p className="text-sm text-muted-foreground mb-4">
-                Select what materials/components this product has, then define the color/type options for each.
+                Select what materials this product has, then add variants (with images) for each.
               </p>
               
-              <div className="space-y-6">
-                {/* Leather */}
-                <div className="border rounded-lg p-4">
-                  <label className="flex items-center gap-2 mb-3">
-                    <input
-                      type="checkbox"
-                      checked={productCharacteristics.hasLeather}
-                      onChange={(e) => setProductCharacteristics({ ...productCharacteristics, hasLeather: e.target.checked })}
-                      className="w-4 h-4 rounded border-gray-300"
-                    />
-                    <span className="font-medium">This product has Leather</span>
-                  </label>
-                  
-                  {productCharacteristics.hasLeather && (
-                    <div>
-                      <Label className="text-xs text-muted-foreground mb-2">Leather Options</Label>
-                      <Input
-                        placeholder="Enter leather colors/types (comma separated: Brown, Black, Tan, Natural)"
-                        value={leatherVariants.join(', ')}
-                        onChange={(e) => setLeatherVariants(e.target.value.split(',').map(v => v.trim()).filter(Boolean))}
+              {/* Select Characteristics */}
+              <div className="mb-6">
+                <Label className="mb-2">Product Characteristics</Label>
+                <div className="flex gap-4 flex-wrap">
+                  {['Leather', 'Fur', 'Fabric'].map((char) => (
+                    <label key={char} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedCharacteristics.includes(char)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedCharacteristics([...selectedCharacteristics, char])
+                          } else {
+                            setSelectedCharacteristics(selectedCharacteristics.filter(c => c !== char))
+                          }
+                        }}
+                        className="w-4 h-4 rounded border-gray-300"
                       />
-                      {leatherVariants.length > 0 && (
-                        <div className="flex gap-2 mt-2 flex-wrap">
-                          {leatherVariants.map((variant, i) => (
-                            <span key={i} className="px-2 py-1 bg-gray-100 text-xs rounded">
-                              {variant}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Fur */}
-                <div className="border rounded-lg p-4">
-                  <label className="flex items-center gap-2 mb-3">
-                    <input
-                      type="checkbox"
-                      checked={productCharacteristics.hasFur}
-                      onChange={(e) => setProductCharacteristics({ ...productCharacteristics, hasFur: e.target.checked })}
-                      className="w-4 h-4 rounded border-gray-300"
-                    />
-                    <span className="font-medium">This product has Fur</span>
-                  </label>
-                  
-                  {productCharacteristics.hasFur && (
-                    <div>
-                      <Label className="text-xs text-muted-foreground mb-2">Fur Options</Label>
-                      <Input
-                        placeholder="Enter fur colors/types (comma separated: White, Black, Grey, Brown)"
-                        value={furVariants.join(', ')}
-                        onChange={(e) => setFurVariants(e.target.value.split(',').map(v => v.trim()).filter(Boolean))}
-                      />
-                      {furVariants.length > 0 && (
-                        <div className="flex gap-2 mt-2 flex-wrap">
-                          {furVariants.map((variant, i) => (
-                            <span key={i} className="px-2 py-1 bg-gray-100 text-xs rounded">
-                              {variant}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Fabric */}
-                <div className="border rounded-lg p-4">
-                  <label className="flex items-center gap-2 mb-3">
-                    <input
-                      type="checkbox"
-                      checked={productCharacteristics.hasFabric}
-                      onChange={(e) => setProductCharacteristics({ ...productCharacteristics, hasFabric: e.target.checked })}
-                      className="w-4 h-4 rounded border-gray-300"
-                    />
-                    <span className="font-medium">This product has Fabric/Lining</span>
-                  </label>
-                  
-                  {productCharacteristics.hasFabric && (
-                    <div>
-                      <Label className="text-xs text-muted-foreground mb-2">Fabric Options</Label>
-                      <Input
-                        placeholder="Enter fabric colors/patterns (comma separated: Navy, Red, Plaid)"
-                        value={fabricVariants.join(', ')}
-                        onChange={(e) => setFabricVariants(e.target.value.split(',').map(v => v.trim()).filter(Boolean))}
-                      />
-                      {fabricVariants.length > 0 && (
-                        <div className="flex gap-2 mt-2 flex-wrap">
-                          {fabricVariants.map((variant, i) => (
-                            <span key={i} className="px-2 py-1 bg-gray-100 text-xs rounded">
-                              {variant}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                      <span className="text-sm font-medium">{char}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
+
+              {/* Variants for each selected characteristic */}
+              {selectedCharacteristics.length > 0 && (
+                <div className="space-y-6">
+                  {selectedCharacteristics.map((characteristic) => (
+                    <div key={characteristic} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-medium">{characteristic} Variants</h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setCharacteristicVariants({
+                              ...characteristicVariants,
+                              [characteristic]: [
+                                ...(characteristicVariants[characteristic] || []),
+                                { name: '', description: '', imageUrl: '' }
+                              ]
+                            })
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add {characteristic} Variant
+                        </Button>
+                      </div>
+
+                      {characteristicVariants[characteristic]?.length > 0 && (
+                        <div className="space-y-4">
+                          {characteristicVariants[characteristic].map((variant, variantIndex) => (
+                            <div key={variantIndex} className="border rounded p-3 bg-gray-50 space-y-3">
+                              <div className="flex items-start gap-2">
+                                <div className="flex-1 space-y-2">
+                                  <Input
+                                    placeholder={`Name (e.g., Cognac Brown, White Fur)`}
+                                    value={variant.name}
+                                    onChange={(e) => {
+                                      const newVariants = [...characteristicVariants[characteristic]]
+                                      newVariants[variantIndex].name = e.target.value
+                                      setCharacteristicVariants({ ...characteristicVariants, [characteristic]: newVariants })
+                                    }}
+                                  />
+                                  <Input
+                                    placeholder="Description (optional)"
+                                    value={variant.description}
+                                    onChange={(e) => {
+                                      const newVariants = [...characteristicVariants[characteristic]]
+                                      newVariants[variantIndex].description = e.target.value
+                                      setCharacteristicVariants({ ...characteristicVariants, [characteristic]: newVariants })
+                                    }}
+                                  />
+                                  {variant.imageUrl && (
+                                    <div className="relative w-20 h-20 rounded overflow-hidden">
+                                      <img src={variant.imageUrl} className="w-full h-full object-cover" alt={variant.name} />
+                                    </div>
+                                  )}
+                                  <label className="cursor-pointer">
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={async (e) => {
+                                        const file = e.target.files?.[0]
+                                        if (!file) return
+                                        
+                                        const uploadingToast = toast.loading('Uploading variant image...')
+                                        
+                                        try {
+                                          const { createClient } = await import('@supabase/supabase-js')
+                                          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+                                          const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+                                          const supabase = createClient(supabaseUrl, supabaseKey)
+                                          
+                                          const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+                                          const sanitizedExt = fileExt.replace(/[^a-z0-9]/g, '')
+                                          const timestamp = Date.now()
+                                          const randomStr = Math.random().toString(36).substring(2, 11)
+                                          const fileName = `img-${timestamp}-${randomStr}.${sanitizedExt}`
+                                          
+                                          const { error } = await supabase.storage
+                                            .from('product-media')
+                                            .upload(fileName, file, {
+                                              cacheControl: '3600',
+                                              upsert: false
+                                            })
+                                          
+                                          if (error) throw error
+                                          
+                                          const { data: { publicUrl } } = supabase.storage
+                                            .from('product-media')
+                                            .getPublicUrl(fileName)
+                                          
+                                          const newVariants = [...characteristicVariants[characteristic]]
+                                          newVariants[variantIndex].imageUrl = publicUrl
+                                          setCharacteristicVariants({ ...characteristicVariants, [characteristic]: newVariants })
+                                          
+                                          toast.success('Image uploaded!', { id: uploadingToast })
+                                          e.target.value = ''
+                                        } catch (error) {
+                                          console.error('Upload error:', error)
+                                          toast.error('Upload failed', { id: uploadingToast })
+                                        }
+                                      }}
+                                      style={{ display: 'none' }}
+                                    />
+                                    <Button type="button" variant="outline" size="sm" asChild>
+                                      <span>
+                                        <Upload className="h-3 w-3 mr-2" />
+                                        {variant.imageUrl ? 'Change Image' : 'Upload Image'}
+                                      </span>
+                                    </Button>
+                                  </label>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const newVariants = characteristicVariants[characteristic].filter((_, i) => i !== variantIndex)
+                                    setCharacteristicVariants({ ...characteristicVariants, [characteristic]: newVariants })
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {characteristicVariants[characteristic]?.length === 0 && (
+                        <p className="text-xs text-muted-foreground text-center py-4">
+                          No {characteristic.toLowerCase()} variants yet. Click "Add {characteristic} Variant" above.
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </Card>
 
             {/* Customization Options */}
