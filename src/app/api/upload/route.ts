@@ -53,6 +53,10 @@ export async function POST(request: NextRequest) {
     const supabaseUrl = `https://${projectId}.supabase.co`
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+    // Determine which bucket to use
+    const bucketName = lotId ? 'auction-media' : 'product-media'
+    console.log('Using bucket:', bucketName)
+    
     // Upload all files
     const uploadedUrls = []
     
@@ -61,10 +65,12 @@ export async function POST(request: NextRequest) {
       const buffer = new Uint8Array(arrayBuffer)
       
       const fileExt = file.name.split('.').pop()
-      const fileName = `${lotId || 'product'}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`
+      const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`
+      
+      console.log('Uploading to bucket:', bucketName, 'File:', fileName)
       
       const { data, error } = await supabase.storage
-        .from('auction-media')
+        .from(bucketName)
         .upload(fileName, buffer, {
           contentType: file.type,
           cacheControl: '3600',
@@ -77,9 +83,10 @@ export async function POST(request: NextRequest) {
         uploadedUrls.push(`https://utfs.io/f/${file.name.replace(/\s+/g, '-')}-${Date.now()}`)
       } else {
         const { data: { publicUrl } } = supabase.storage
-          .from('auction-media')
+          .from(bucketName)
           .getPublicUrl(fileName)
         
+        console.log('Upload successful, URL:', publicUrl)
         uploadedUrls.push(publicUrl)
       }
     }
