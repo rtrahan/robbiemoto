@@ -8,32 +8,20 @@ export const metadata = {
 export default function FAQPage() {
   const faqs = [
     {
-      question: 'How long does it take to receive my order?',
-      answer: 'All items are made to order. Please allow 4-6 business days for production before shipping. Shipping time depends on the method you choose (First Class, Priority, or Priority Express).',
+      question: 'Can I get one of these leather wallets in a different color?',
+      answer: 'Yes you can! You will notice that within a listing, there\'s a picture of the color options that you can choose from. Occasionally, I may be running low or out of a specific color and may not be able to offer that as an option. If you don\'t see the color you would like available, please feel free to reach out to me at: info@robbiemoto.com',
     },
     {
-      question: 'Do you accept returns?',
-      answer: 'Yes, we accept returns and exchanges on most items within 14 days of delivery. However, custom or personalized orders (including all iPhone wallets) are non-returnable. Items must be shipped back within 30 days.',
+      question: 'Can you make custom handmade leather accessories?',
+      answer: 'I am always happy to make simple design/color changes. Just reach out to me with your ideas. If you have a completely new design in mind, please feel free to send me a sketch or description of it and I will let you know if it\'s something I can do! Email me at: info@robbiemoto.com',
     },
     {
-      question: 'What payment methods do you accept?',
-      answer: 'We accept all major credit cards and PayPal.',
+      question: 'After purchasing an item, how long will it take to ship?',
+      answer: 'All of my designs are made to order. Please allow me 4-6 business days to create your item. The time it takes will depend on how many orders I have received that week but rest assured, I will make your item in the order it is received and as soon as I can. If you are on a time crunch, you are welcome to reach out to me directly for a more accurate ETA. Email me at: info@robbiemoto.com',
     },
     {
-      question: 'How do the monthly auctions work?',
-      answer: 'We host monthly ceramic auctions featuring one-of-a-kind handcrafted pieces. Create an account, place bids, and if you win, we\'ll contact you about payment and shipping. Auctions feature soft-close bidding - if a bid comes in during the last 2 minutes, that item\'s timer resets to 2 minutes.',
-    },
-    {
-      question: 'Do you offer wholesale pricing?',
-      answer: 'Yes! We love working with shops and offer wholesale discounts. Please contact info@robbiemoto.com to discuss an order.',
-    },
-    {
-      question: 'Where are your products made?',
-      answer: 'All items are handcrafted under one roof in Chattanooga, TN by Robbie Matsumoto.',
-    },
-    {
-      question: 'What if there\'s a defect in my item?',
-      answer: 'We guarantee the quality of our handmade items. If there\'s a flaw in craftsmanship or a mistake on our end, we\'ll happily repair, replace, or refund it.',
+      question: 'Do you do consignment or wholesale?',
+      answer: 'Sorry but I do not work on a consignment basis. I do offer a wholesale discount to shops. If you are interested, please reach out to me for my line-sheet and wholesale policies at: info@robbiemoto.com Thank you!',
     },
   ]
 
