@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 
 export const metadata = {
   title: 'Admin Dashboard',
-  description: 'Manage your ceramic auctions',
+  description: 'Overview of your auctions and shop',
 }
 
 export default async function AdminDashboard() {
@@ -22,15 +22,9 @@ export default async function AdminDashboard() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-sm text-muted-foreground">
-            Manage your monthly ceramic auctions
+            Overview of your auctions and shop
           </p>
         </div>
-        <Link href="/admin/auctions/new">
-          <Button size="lg" className="w-full sm:w-auto">
-            <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-            New Auction
-          </Button>
-        </Link>
       </div>
 
       {/* Quick Stats - Mobile Responsive Grid */}
