@@ -124,6 +124,72 @@ export default function NewProductPage() {
         <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
           {/* Main Form */}
           <div className="space-y-6">
+            {/* Images FIRST */}
+            <Card className="p-6">
+              <h2 className="font-semibold mb-4">Product Images</h2>
+              <p className="text-sm text-muted-foreground mb-4">Upload images first, then use AI to generate title & description</p>
+              
+              {mediaUrls.length > 0 && (
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  {mediaUrls.map((url, index) => (
+                    <div key={index} className="relative aspect-square bg-gray-100 rounded overflow-hidden group">
+                      <img src={url} alt={`Product ${index + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setMediaUrls(mediaUrls.filter((_, i) => i !== index))}
+                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <label className="border-2 border-dashed rounded-lg p-8 text-center block cursor-pointer hover:border-gray-400 transition-colors">
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files || [])
+                    if (files.length === 0) return
+                    
+                    toast.info('Uploading...')
+                    
+                    const formData = new FormData()
+                    files.forEach(file => formData.append('files', file))
+                    
+                    try {
+                      const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData,
+                      })
+                      
+                      const result = await response.json()
+                      
+                      if (response.ok && result.urls) {
+                        setMediaUrls([...mediaUrls, ...result.urls])
+                        toast.success(`${result.urls.length} file(s) uploaded!`)
+                        e.target.value = ''
+                      } else {
+                        throw new Error(result.error || 'Upload failed')
+                      }
+                    } catch (error) {
+                      console.error('Upload error:', error)
+                      toast.error(error instanceof Error ? error.message : 'Upload failed')
+                    }
+                  }}
+                  className="hidden"
+                />
+                <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-sm text-gray-600 mb-2">Click to upload images or videos</p>
+                <p className="text-xs text-gray-400">Supports JPG, PNG, MP4, MOV</p>
+              </label>
+            </Card>
+
             <Card className="p-6">
               <h2 className="font-semibold mb-4">Product Details</h2>
               
@@ -247,70 +313,6 @@ export default function NewProductPage() {
               </div>
             </Card>
 
-            {/* Images */}
-            <Card className="p-6">
-              <h2 className="font-semibold mb-4">Product Images</h2>
-              
-              {mediaUrls.length > 0 && (
-                <div className="grid grid-cols-3 gap-3 mb-4">
-                  {mediaUrls.map((url, index) => (
-                    <div key={index} className="relative aspect-square bg-gray-100 rounded overflow-hidden group">
-                      <img src={url} alt={`Product ${index + 1}`} className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setMediaUrls(mediaUrls.filter((_, i) => i !== index))}
-                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              <label className="border-2 border-dashed rounded-lg p-8 text-center block cursor-pointer hover:border-gray-400 transition-colors">
-                <input
-                  type="file"
-                  accept="image/*,video/*"
-                  multiple
-                  onChange={async (e) => {
-                    const files = Array.from(e.target.files || [])
-                    if (files.length === 0) return
-                    
-                    toast.info('Uploading...')
-                    
-                    const formData = new FormData()
-                    files.forEach(file => formData.append('files', file))
-                    
-                    try {
-                      const response = await fetch('/api/upload', {
-                        method: 'POST',
-                        body: formData,
-                      })
-                      
-                      const result = await response.json()
-                      
-                      if (response.ok && result.urls) {
-                        setMediaUrls([...mediaUrls, ...result.urls])
-                        toast.success(`${result.urls.length} file(s) uploaded!`)
-                        e.target.value = ''
-                      } else {
-                        throw new Error(result.error || 'Upload failed')
-                      }
-                    } catch (error) {
-                      console.error('Upload error:', error)
-                      toast.error(error instanceof Error ? error.message : 'Upload failed')
-                    }
-                  }}
-                  className="hidden"
-                />
-                <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-sm text-gray-600 mb-2">Click to upload images or videos</p>
-                <p className="text-xs text-gray-400">Supports JPG, PNG, MP4, MOV</p>
-              </label>
-            </Card>
           </div>
 
           {/* Sidebar */}
