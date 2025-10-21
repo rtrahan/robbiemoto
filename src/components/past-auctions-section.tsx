@@ -47,16 +47,7 @@ export function PastAuctionsSection() {
   const displayedAuctions = showAll ? pastAuctions : pastAuctions.slice(0, 3)
 
   return (
-    <div className="border-t border-gray-200 bg-gray-50 py-16">
-      <div className="container px-4 md:px-8 max-w-6xl mx-auto">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-serif font-light text-gray-900 mb-2">
-            Past Auctions
-          </h2>
-          <p className="text-sm text-gray-600">
-            Browse previous drops and see what sold
-          </p>
-        </div>
+    <div className="container px-4 md:px-8 max-w-6xl mx-auto">
 
         <div className="space-y-6">
           {displayedAuctions.map((auction) => (
