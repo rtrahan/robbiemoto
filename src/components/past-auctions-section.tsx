@@ -111,21 +111,21 @@ export function PastAuctionsSection() {
                   </div>
                 )}
 
-                {/* Stats */}
-                <div className="flex gap-6 mt-4 pt-4 border-t text-sm text-gray-600">
-                  <span>📦 {auction._count?.lots || 0} items</span>
-                  <span>💰 {formatCurrency(auction.totalSales || 0)} total sales</span>
-                  <span>✓ {auction.itemsSold || 0} sold</span>
+                  {/* Stats */}
+                  <div className="flex gap-6 mt-4 pt-4 border-t text-sm text-gray-600">
+                    <span>📦 {auction._count?.lots || 0} items</span>
+                    <span>💰 {formatCurrency(auction.totalSales || 0)} total sales</span>
+                    <span>✓ {auction.itemsSold || 0} sold</span>
+                  </div>
+                  
+                  {/* View Details Link */}
+                  <div className="mt-4 pt-4 border-t">
+                    <Button variant="outline" size="sm" className="w-full group">
+                      View All Items & Prices
+                      <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </div>
                 </div>
-                
-                {/* View Details Link */}
-                <div className="mt-4 pt-4 border-t">
-                  <Button variant="outline" size="sm" className="w-full group">
-                    View All Items & Prices
-                    <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </div>
-              </div>
               </a>
             </Card>
           ))}
