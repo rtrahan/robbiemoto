@@ -109,14 +109,30 @@ export function AuthHeader() {
     )
   }
 
-  // Not logged in - show sign in
+  // Not logged in - show navigation + sign in
   return (
-    <a 
-      href="/login"
-      className="text-xs uppercase tracking-wider text-gray-600 hover:text-gray-900 transition-colors font-medium"
-    >
-      Sign In
-    </a>
+    <div className="flex items-center gap-6">
+      <nav className="flex gap-6 mr-6">
+        <a href="/" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+          Home
+        </a>
+        <a href="/auctions" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+          Auctions
+        </a>
+        <a href="/shop" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+          Shop
+        </a>
+        <a href="/about" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+          About
+        </a>
+      </nav>
+      <a 
+        href="/login"
+        className="text-xs uppercase tracking-wider text-gray-600 hover:text-gray-900 transition-colors font-medium"
+      >
+        Sign In
+      </a>
+    </div>
   )
 }
 
