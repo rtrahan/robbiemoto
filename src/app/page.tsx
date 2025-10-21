@@ -123,8 +123,27 @@ export default async function HomePage() {
         )}
       </main>
 
+      {/* Testimonials */}
+      <section className="py-20 bg-gray-50">
+        <div className="container px-4 md:px-8 max-w-4xl mx-auto">
+          <h2 className="text-3xl font-serif font-light text-center mb-12">What People Say</h2>
+          
+          <div className="bg-white rounded-2xl p-8 md:p-12 shadow-sm border border-gray-200">
+            <div className="text-center">
+              <div className="text-6xl mb-6">★★★★★</div>
+              <blockquote className="text-lg text-gray-700 leading-relaxed mb-6 italic">
+                "It's such a beautiful handmade wallet in a really lovely colour. This is my second item from Robbie and the craftsmanship is impeccable. The customer service is also second to none - highly recommended!"
+              </blockquote>
+              <cite className="not-italic">
+                <p className="font-medium text-gray-900">Jessica Murphy</p>
+              </cite>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="bg-gray-50 border-t border-gray-200 py-16">
+      <footer className="bg-white border-t border-gray-200 py-16">
         <div className="container px-4 md:px-8">
           <div className="max-w-4xl mx-auto text-center space-y-6">
             <div className="text-6xl mb-4">🏺</div>
