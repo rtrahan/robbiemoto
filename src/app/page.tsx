@@ -1,8 +1,6 @@
-import { CountdownHero } from '@/components/landing/countdown-hero'
 import { LiveAuctionView } from '@/components/live-auction-view'
 import { LiveAuctionCountdown } from '@/components/live-auction-countdown'
 import { UpcomingAuctionPreview } from '@/components/upcoming-auction-preview'
-import { PastAuctionsSection } from '@/components/past-auctions-section'
 import { AuthHeader } from '@/components/auth-header'
 import { prisma } from '@/lib/prisma'
 
