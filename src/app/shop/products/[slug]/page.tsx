@@ -167,64 +167,100 @@ export default function ProductPage() {
               )}
 
               {/* Variant Selection */}
-              {product.variants && (
-                <div className="space-y-4 pt-6 border-t">
+              {product.variants && Object.keys(product.variants).some((k: string) => product.variants[k]?.length > 0) && (
+                <div className="space-y-6 pt-6 border-t">
                   <h3 className="font-medium">Select Options</h3>
                   
-                  {/* Leather Options */}
-                  {product.variants.characteristics?.hasLeather && product.variants.leather?.length > 0 && (
+                  {/* Leather Variants */}
+                  {product.variants.Leather?.length > 0 && (
                     <div>
-                      <label className="block text-sm font-medium mb-2">Leather Type</label>
-                      <select
-                        value={selectedLeather}
-                        onChange={(e) => setSelectedLeather(e.target.value)}
-                        className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      >
-                        <option value="">Select Leather</option>
-                        {product.variants.leather.map((option: string) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
+                      <label className="block text-sm font-medium mb-3">Leather Type</label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {product.variants.Leather.map((variant: any, index: number) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => setSelectedLeather(variant.name)}
+                            className={`border-2 rounded-lg p-2 text-left transition-all ${
+                              selectedLeather === variant.name 
+                                ? 'border-gray-900 bg-gray-50' 
+                                : 'border-gray-200 hover:border-gray-400'
+                            }`}
+                          >
+                            {variant.imageUrl && (
+                              <div className="aspect-square w-full rounded overflow-hidden mb-2">
+                                <img src={variant.imageUrl} alt={variant.name} className="w-full h-full object-cover" />
+                              </div>
+                            )}
+                            <div className="text-sm font-medium">{variant.name}</div>
+                            {variant.description && (
+                              <div className="text-xs text-gray-600 mt-1 line-clamp-2">{variant.description}</div>
+                            )}
+                          </button>
                         ))}
-                      </select>
+                      </div>
                     </div>
                   )}
                   
-                  {/* Fur Options */}
-                  {product.variants.characteristics?.hasFur && product.variants.fur?.length > 0 && (
+                  {/* Fur Variants */}
+                  {product.variants.Fur?.length > 0 && (
                     <div>
-                      <label className="block text-sm font-medium mb-2">Fur Type</label>
-                      <select
-                        value={selectedFur}
-                        onChange={(e) => setSelectedFur(e.target.value)}
-                        className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      >
-                        <option value="">Select Fur</option>
-                        {product.variants.fur.map((option: string) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
+                      <label className="block text-sm font-medium mb-3">Fur Type</label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {product.variants.Fur.map((variant: any, index: number) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => setSelectedFur(variant.name)}
+                            className={`border-2 rounded-lg p-2 text-left transition-all ${
+                              selectedFur === variant.name 
+                                ? 'border-gray-900 bg-gray-50' 
+                                : 'border-gray-200 hover:border-gray-400'
+                            }`}
+                          >
+                            {variant.imageUrl && (
+                              <div className="aspect-square w-full rounded overflow-hidden mb-2">
+                                <img src={variant.imageUrl} alt={variant.name} className="w-full h-full object-cover" />
+                              </div>
+                            )}
+                            <div className="text-sm font-medium">{variant.name}</div>
+                            {variant.description && (
+                              <div className="text-xs text-gray-600 mt-1 line-clamp-2">{variant.description}</div>
+                            )}
+                          </button>
                         ))}
-                      </select>
+                      </div>
                     </div>
                   )}
                   
-                  {/* Fabric Options */}
-                  {product.variants.characteristics?.hasFabric && product.variants.fabric?.length > 0 && (
+                  {/* Fabric Variants */}
+                  {product.variants.Fabric?.length > 0 && (
                     <div>
-                      <label className="block text-sm font-medium mb-2">Fabric/Lining</label>
-                      <select
-                        value={selectedFabric}
-                        onChange={(e) => setSelectedFabric(e.target.value)}
-                        className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      >
-                        <option value="">Select Fabric</option>
-                        {product.variants.fabric.map((option: string) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
+                      <label className="block text-sm font-medium mb-3">Fabric/Lining</label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {product.variants.Fabric.map((variant: any, index: number) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => setSelectedFabric(variant.name)}
+                            className={`border-2 rounded-lg p-2 text-left transition-all ${
+                              selectedFabric === variant.name 
+                                ? 'border-gray-900 bg-gray-50' 
+                                : 'border-gray-200 hover:border-gray-400'
+                            }`}
+                          >
+                            {variant.imageUrl && (
+                              <div className="aspect-square w-full rounded overflow-hidden mb-2">
+                                <img src={variant.imageUrl} alt={variant.name} className="w-full h-full object-cover" />
+                              </div>
+                            )}
+                            <div className="text-sm font-medium">{variant.name}</div>
+                            {variant.description && (
+                              <div className="text-xs text-gray-600 mt-1 line-clamp-2">{variant.description}</div>
+                            )}
+                          </button>
                         ))}
-                      </select>
+                      </div>
                     </div>
                   )}
                 </div>
