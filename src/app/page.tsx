@@ -143,23 +143,55 @@ export default async function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-16">
-        <div className="container px-4 md:px-8">
-          <div className="max-w-4xl mx-auto text-center space-y-6">
-            <div className="text-6xl mb-4">🏺</div>
-            <h3 className="text-2xl font-serif font-light">Robbiemoto</h3>
-            <p className="text-gray-600 max-w-xl mx-auto">
-              Handcrafted ceramics and leather goods, one piece at a time. 
-              Monthly auctions and curated shop collections.
-            </p>
-            <div className="flex gap-6 justify-center pt-4 flex-wrap">
-              <a href="/auctions" className="text-sm text-gray-600 hover:text-gray-900">Past Auctions</a>
-              <a href="/shop" className="text-sm text-gray-600 hover:text-gray-900">Shop</a>
-              <a href="/about" className="text-sm text-gray-600 hover:text-gray-900">About</a>
-              <a href="https://instagram.com/robbiemoto" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-gray-900">Instagram</a>
+      <footer className="bg-gray-50 border-t border-gray-200 py-16">
+        <div className="container px-4 md:px-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 mb-12">
+            {/* Connect */}
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-900 mb-6">Connect</h3>
+              <div className="space-y-3">
+                <p className="text-gray-600">
+                  <span className="font-medium">Instagram:</span>{' '}
+                  <a href="https://instagram.com/robbiemoto" target="_blank" rel="noopener noreferrer" className="text-gray-900 hover:underline">
+                    @robbiemoto
+                  </a>
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-medium">Facebook:</span>{' '}
+                  <a href="https://facebook.com/robbiemotoinc" target="_blank" rel="noopener noreferrer" className="text-gray-900 hover:underline">
+                    @robbiemotoinc
+                  </a>
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-medium">Email:</span>{' '}
+                  <a href="mailto:robbiemoto@gmail.com" className="text-gray-900 hover:underline">
+                    robbiemoto@gmail.com
+                  </a>
+                </p>
+              </div>
             </div>
-            <p className="text-sm text-gray-500 pt-6">
-              © 2025 Robbiemoto. All rights reserved.
+
+            {/* Help */}
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-900 mb-6">Help</h3>
+              <div className="space-y-3">
+                <a href="/shipping-returns" className="block text-gray-900 hover:underline">
+                  Shipping & Returns
+                </a>
+                <a href="/privacy-policy" className="block text-gray-900 hover:underline">
+                  Privacy Policy
+                </a>
+                <a href="/faq" className="block text-gray-900 hover:underline">
+                  FAQ
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom */}
+          <div className="text-center pt-8 border-t border-gray-300">
+            <p className="text-sm text-gray-500">
+              © 2025 Robbiemoto. Handcrafted in Chattanooga, TN. All rights reserved.
             </p>
           </div>
         </div>
