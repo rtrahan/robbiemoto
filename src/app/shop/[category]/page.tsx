@@ -95,7 +95,7 @@ export default async function CategoryPage({ params }: PageProps) {
                     <span className="text-lg font-bold text-gray-900">
                       {formatCurrency(product.priceCents)}
                     </span>
-                    {product.compareAtCents && product.compareAtCents > product.priceCents && (
+                    {product.compareAtCents > 0 && product.compareAtCents > product.priceCents && (
                       <span className="text-sm text-gray-400 line-through">
                         {formatCurrency(product.compareAtCents)}
                       </span>

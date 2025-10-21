@@ -136,7 +136,7 @@ export default async function ShopPage() {
                       <span className="font-semibold">
                         {formatCurrency(product.priceCents)}
                       </span>
-                      {product.compareAtCents && product.compareAtCents > product.priceCents && (
+                      {product.compareAtCents > 0 && product.compareAtCents > product.priceCents && (
                         <span className="text-sm text-gray-500 line-through">
                           {formatCurrency(product.compareAtCents)}
                         </span>
