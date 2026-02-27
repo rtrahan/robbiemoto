@@ -28,7 +28,7 @@ async function getProducts() {
         .eq('status', 'ACTIVE')
         .order('createdAt', { ascending: false })
       
-      return data || []
+      return Array.isArray(data) ? data.filter(Boolean) : []
     } catch {
       return []
     }
@@ -36,12 +36,13 @@ async function getProducts() {
 }
 
 export default async function ShopPage() {
-  const products = await getProducts()
-  
+  const raw = await getProducts()
+  const products = Array.isArray(raw) ? raw.filter(Boolean) : []
+
   const categories = [
-    { name: 'Ceramics', slug: 'ceramics', emoji: '🏺', count: products.filter(p => p.category === 'CERAMICS').length },
-    { name: 'Leather', slug: 'leather', emoji: '👜', count: products.filter(p => p.category === 'LEATHER').length },
-    { name: 'Accessories', slug: 'accessories', emoji: '✨', count: products.filter(p => p.category === 'ACCESSORIES').length },
+    { name: 'Ceramics', slug: 'ceramics', emoji: '🏺', count: products.filter(p => p?.category === 'CERAMICS').length },
+    { name: 'Leather', slug: 'leather', emoji: '👜', count: products.filter(p => p?.category === 'LEATHER').length },
+    { name: 'Accessories', slug: 'accessories', emoji: '✨', count: products.filter(p => p?.category === 'ACCESSORIES').length },
   ]
 
   return (
@@ -94,14 +95,14 @@ export default async function ShopPage() {
         <div className="container px-4 pb-20 md:px-8">
           {products.length > 0 ? (
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-7xl mx-auto">
-              {products.map((product) => (
+              {products.filter(Boolean).map((product) => (
                 <Link
-                  key={product.id}
-                  href={`/shop/products/${product.slug}`}
+                  key={product?.id ?? ''}
+                  href={`/shop/products/${product?.slug ?? ''}`}
                   className="group"
                 >
                   <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4 relative">
-                    {product.mediaUrls && product.mediaUrls.length > 0 ? (
+                    {product?.mediaUrls && Array.isArray(product.mediaUrls) && product.mediaUrls.length > 0 ? (
                       product.mediaUrls[0].includes('vid-') ? (
                         <video
                           src={product.mediaUrls[0]}
@@ -113,7 +114,7 @@ export default async function ShopPage() {
                       ) : (
                         <img
                           src={product.mediaUrls[0]}
-                          alt={product.name}
+                          alt={product?.name ?? ''}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       )
@@ -122,7 +123,7 @@ export default async function ShopPage() {
                         🏺
                       </div>
                     )}
-                    {product.compareAtCents && product.compareAtCents > product.priceCents && (
+                    {product?.compareAtCents != null && product.compareAtCents > (product?.priceCents ?? 0) && (
                       <Badge className="absolute top-2 right-2 bg-red-500">
                         Sale
                       </Badge>
@@ -130,19 +131,19 @@ export default async function ShopPage() {
                   </div>
                   <div className="space-y-1">
                     <h3 className="font-medium group-hover:text-gray-600 transition-colors line-clamp-2">
-                      {product.name}
+                      {product?.name ?? ''}
                     </h3>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">
-                        {formatCurrency(product.priceCents)}
+                        {formatCurrency(product?.priceCents ?? 0)}
                       </span>
-                      {product.compareAtCents > 0 && product.compareAtCents > product.priceCents && (
+                      {(product?.compareAtCents ?? 0) > 0 && (product?.compareAtCents ?? 0) > (product?.priceCents ?? 0) && (
                         <span className="text-sm text-gray-500 line-through">
-                          {formatCurrency(product.compareAtCents)}
+                          {formatCurrency(product?.compareAtCents ?? 0)}
                         </span>
                       )}
                     </div>
-                    {product.stockQuantity <= 0 && (
+                    {(product?.stockQuantity ?? 0) <= 0 && (
                       <Badge variant="outline" className="text-xs">
                         Out of Stock
                       </Badge>
