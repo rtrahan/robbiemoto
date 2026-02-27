@@ -25,8 +25,30 @@ export default function NewAuctionPage() {
   })
   
   const handleSubmit = async () => {
-    if (!formData.name || !formData.startsAt || !formData.endsAt) {
-      toast.error('Please fill in all required fields')
+    const missing: string[] = []
+    if (!formData.name?.trim()) missing.push('Name')
+    if (!formData.startsAt) missing.push('Start Date & Time')
+    if (!formData.endsAt) missing.push('End Date & Time')
+
+    if (missing.length > 0) {
+      toast.error(`Please fill in: ${missing.join(', ')}`)
+      return
+    }
+
+    const start = new Date(formData.startsAt)
+    const end = new Date(formData.endsAt)
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      toast.error('Please choose valid start and end dates')
+      return
+    }
+    if (end <= start) {
+      toast.error('End date must be after start date')
+      return
+    }
+    // Browsers often don't support datetime-local far in the future (e.g. year 2326)
+    const maxYear = new Date().getFullYear() + 20
+    if (end.getFullYear() > maxYear || start.getFullYear() > maxYear) {
+      toast.error(`Dates must be within the next 20 years (before ${maxYear + 1}). Browsers don't support dates too far in the future.`)
       return
     }
     
