@@ -4,6 +4,18 @@ import { isAdminAuthenticated } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import type { AuctionStatus } from '@prisma/client'
 
+function ensureUtcDates<T extends Record<string, any>>(obj: T): T {
+  const dateFields = ['startsAt', 'endsAt', 'createdAt', 'updatedAt', 'actualEndedAt']
+  const result = { ...obj }
+  for (const field of dateFields) {
+    const val = result[field]
+    if (typeof val === 'string' && val && !val.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(val)) {
+      (result as any)[field] = val + 'Z'
+    }
+  }
+  return result
+}
+
 function computeAuctionStatus(startsAt: string, endsAt: string): AuctionStatus {
   const now = new Date()
   const start = new Date(startsAt)
@@ -97,7 +109,7 @@ export async function POST(request: NextRequest) {
       revalidatePath('/auctions')
       revalidatePath('/')
 
-      return NextResponse.json(auction)
+      return NextResponse.json(ensureUtcDates(auction))
     }
   } catch (error: any) {
     console.error('Create auction error:', {
@@ -147,7 +159,7 @@ export async function GET(request: NextRequest) {
         throw new Error(error.message)
       }
 
-      const formatted = (auctions || []).map((a: any) => ({
+      const formatted = (auctions || []).map((a: any) => ensureUtcDates({
         ...a,
         _count: { lots: a.Lot?.length ?? 0 },
         Lot: undefined,
