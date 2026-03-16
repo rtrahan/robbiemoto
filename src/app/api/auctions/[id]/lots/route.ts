@@ -16,8 +16,8 @@ export async function GET(
           published: true,
         },
         orderBy: [
-          { featured: 'desc' },
           { sortOrder: 'asc' },
+          { createdAt: 'asc' },
         ],
         include: {
           _count: {
@@ -70,8 +70,8 @@ export async function GET(
         .select('*')
         .eq('auctionId', id)
         .eq('published', true)
-        .order('featured', { ascending: false })
         .order('sortOrder', { ascending: true })
+        .order('createdAt', { ascending: true })
       
       if (!lots) {
         return NextResponse.json([])

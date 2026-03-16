@@ -31,9 +31,26 @@ export function LiveAuctionView({ auction }: LiveAuctionViewProps) {
       const response = await fetch(`/api/auctions/${auction.id}/lots`)
       if (response.ok) {
         const data = await response.json()
-        setLots(data)
         
-        // Check if any items are in extended bidding
+        setLots(prev => {
+          if (prev.length === 0) return data
+          
+          const updatedMap = new Map(data.map((lot: any) => [lot.id, lot]))
+          
+          const merged = prev.map((existing: any) => {
+            const updated = updatedMap.get(existing.id)
+            return updated || existing
+          })
+          
+          data.forEach((lot: any) => {
+            if (!prev.some((p: any) => p.id === lot.id)) {
+              merged.push(lot)
+            }
+          })
+          
+          return merged
+        })
+        
         const anyExtended = data.some((lot: any) => lot.isExtended)
         setHasExtendedItems(anyExtended)
       }
@@ -235,49 +252,32 @@ function LotCard({ lot: initialLot, onLotUpdate }: { lot: any; onLotUpdate: () =
     loadInitialData()
   }, [lot.id, lot._count?.bids, currentUser])
   
-  // Auto-refresh current bid every 2 seconds for real-time feel
+  // Detect bid changes from parent refresh (no per-card polling needed)
   useEffect(() => {
-    const refreshBid = async () => {
-      try {
-        const response = await fetch(`/api/auctions/${lot.auctionId}/lots`)
-        if (response.ok) {
-          const lots = await response.json()
-          const updatedLot = lots.find((l: any) => l.id === lot.id)
-          if (updatedLot && updatedLot.currentBidCents !== lot.currentBidCents) {
-            // New bid detected!
-            setLot(updatedLot)
-            setNewBidFlash(true)
-            
-            // Get latest bid to show bidder
-            const bidsResponse = await fetch(`/api/lots/${lot.id}/bids`)
-            if (bidsResponse.ok) {
-              const bids = await bidsResponse.json()
-              if (bids.length > 0) {
-                const topBid = bids[0]
-                setLastBidder(topBid.user?.name || topBid.user?.alias || 'Someone')
-                setBidHistory(bids)
-                
-                // Check if current user is winning
-                if (currentUser && topBid.user?.email === currentUser.email) {
-                  setIsWinning(true)
-                } else {
-                  setIsWinning(false)
-                }
-              }
+    if (initialLot.currentBidCents !== lot.currentBidCents && initialLot.currentBidCents) {
+      setNewBidFlash(true)
+      setTimeout(() => setNewBidFlash(false), 2000)
+      
+      // Refresh bid history to show latest bidder
+      const refreshBidder = async () => {
+        try {
+          const bidsResponse = await fetch(`/api/lots/${lot.id}/bids`)
+          if (bidsResponse.ok) {
+            const bids = await bidsResponse.json()
+            if (bids.length > 0) {
+              const topBid = bids[0]
+              setLastBidder(topBid.user?.name || topBid.user?.alias || 'Someone')
+              setBidHistory(bids)
+              setIsWinning(!!(currentUser && topBid.user?.email === currentUser.email))
             }
-            
-            // Flash effect
-            setTimeout(() => setNewBidFlash(false), 2000)
           }
+        } catch (error) {
+          console.error('Failed to refresh bid info')
         }
-      } catch (error) {
-        console.error('Failed to refresh bid')
       }
+      refreshBidder()
     }
-    
-    const interval = setInterval(refreshBid, 2000) // Every 2 seconds for real-time
-    return () => clearInterval(interval)
-  }, [lot.id, lot.currentBidCents, lot.auctionId])
+  }, [initialLot.currentBidCents])
   
   useEffect(() => {
     if (showBidModal && bidHistory.length === 0) {
