@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { ensureUtcDatesArray } from '@/lib/utils'
 
 // Admin endpoint - shows ALL lots including unpublished
 export async function GET(
@@ -57,7 +58,7 @@ export async function GET(
         })
       )
       
-      return NextResponse.json(lotsWithCounts)
+      return NextResponse.json(ensureUtcDatesArray(lotsWithCounts))
     }
   } catch (error) {
     console.error('Error fetching lots:', error)

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { ensureUtcDatesArray } from '@/lib/utils'
 
 export async function GET(
   request: NextRequest,
@@ -41,7 +42,7 @@ export async function GET(
         .order('placedAt', { ascending: false })
         .limit(20)
       
-      return NextResponse.json(bids || [])
+      return NextResponse.json(ensureUtcDatesArray(bids || []))
     }
   } catch (error) {
     console.error('Error fetching bids:', error)

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { ensureUtcDatesArray } from '@/lib/utils'
 
 export async function GET(
   request: NextRequest,
@@ -91,7 +92,7 @@ export async function GET(
         })
       )
       
-      return NextResponse.json(lotsWithCounts)
+      return NextResponse.json(ensureUtcDatesArray(lotsWithCounts))
     }
   } catch (error) {
     console.error('Error fetching lots:', error)

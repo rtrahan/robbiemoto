@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAuctionStatus } from '@/lib/auction-helpers'
+import { ensureUtcDates, ensureUtcDatesArray } from '@/lib/utils'
 
 export async function GET() {
   try {
@@ -57,9 +58,10 @@ export async function GET() {
       }
       
       const pastAuctions = auctions
-        .filter(auction => getAuctionStatus(auction) === 'ENDED')
+        .filter(auction => getAuctionStatus(ensureUtcDates(auction)) === 'ENDED')
         .map((auction: any) => ({
-          ...auction,
+          ...ensureUtcDates(auction),
+          lots: auction.lots ? ensureUtcDatesArray(auction.lots) : [],
           _count: { lots: auction.lots?.length || 0 },
           totalSales: auction.lots?.reduce((sum: number, lot: any) => 
             sum + (lot.currentBidCents || 0), 0) || 0,

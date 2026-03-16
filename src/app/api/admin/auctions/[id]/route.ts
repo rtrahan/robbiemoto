@@ -1,17 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-
-function ensureUtcDates<T extends Record<string, any>>(obj: T): T {
-  const dateFields = ['startsAt', 'endsAt', 'createdAt', 'updatedAt', 'actualEndedAt']
-  const result = { ...obj }
-  for (const field of dateFields) {
-    const val = result[field]
-    if (typeof val === 'string' && val && !val.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(val)) {
-      (result as any)[field] = val + 'Z'
-    }
-  }
-  return result
-}
+import { ensureUtcDates } from '@/lib/utils'
 
 // GET - Fetch single auction
 export async function GET(

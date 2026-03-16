@@ -2,19 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
+import { ensureUtcDates } from '@/lib/utils'
 import type { AuctionStatus } from '@prisma/client'
-
-function ensureUtcDates<T extends Record<string, any>>(obj: T): T {
-  const dateFields = ['startsAt', 'endsAt', 'createdAt', 'updatedAt', 'actualEndedAt']
-  const result = { ...obj }
-  for (const field of dateFields) {
-    const val = result[field]
-    if (typeof val === 'string' && val && !val.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(val)) {
-      (result as any)[field] = val + 'Z'
-    }
-  }
-  return result
-}
 
 function computeAuctionStatus(startsAt: string, endsAt: string): AuctionStatus {
   const now = new Date()

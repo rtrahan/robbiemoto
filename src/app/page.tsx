@@ -3,6 +3,7 @@ import { LiveAuctionCountdown } from '@/components/live-auction-countdown'
 import { UpcomingAuctionPreview } from '@/components/upcoming-auction-preview'
 import { AuthHeader } from '@/components/auth-header'
 import { prisma } from '@/lib/prisma'
+import { ensureUtcDates } from '@/lib/utils'
 
 export const metadata = {
   title: 'Robbiemoto - Handcrafted Ceramic Auctions',
@@ -314,7 +315,7 @@ async function getCurrentOrNextAuction() {
         .single()
       
       if (liveAuction) {
-        return { ...liveAuction, status: 'live' as const }
+        return { ...ensureUtcDates(liveAuction), status: 'live' as const }
       }
       
       // Try upcoming
@@ -327,7 +328,7 @@ async function getCurrentOrNextAuction() {
         .limit(1)
         .single()
       
-      return nextAuction ? { ...nextAuction, status: 'preview' as const } : null
+      return nextAuction ? { ...ensureUtcDates(nextAuction), status: 'preview' as const } : null
     }
   } catch (error) {
     console.error('❌ All database connections failed:', error)

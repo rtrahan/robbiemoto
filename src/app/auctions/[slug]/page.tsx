@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { ensureUtcDates, ensureUtcDatesArray } from '@/lib/utils'
 import { notFound } from 'next/navigation'
 import { formatCurrency, formatDateTime } from '@/lib/helpers'
 import { getAuctionStatus } from '@/lib/auction-helpers'
@@ -223,16 +224,19 @@ async function getAuctionBySlug(slug: string) {
         return null
       }
       
-      // Filter to published lots and add bid counts
-      return {
-        ...auction,
-        lots: (auction.lots || [])
+      const fixedLots = ensureUtcDatesArray(
+        (auction.lots || [])
           .filter((lot: any) => lot.published)
           .sort((a: any, b: any) => a.sortOrder - b.sortOrder)
           .map((lot: any) => ({
             ...lot,
-            _count: { bids: 0 }, // TODO: Could query bids separately if needed
-          })),
+            _count: { bids: 0 },
+          }))
+      )
+
+      return {
+        ...ensureUtcDates(auction),
+        lots: fixedLots,
       }
     } catch (supabaseError) {
       console.error('All database connections failed:', supabaseError)
