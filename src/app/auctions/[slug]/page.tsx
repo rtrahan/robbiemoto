@@ -158,12 +158,25 @@ export default async function PastAuctionPage({ params }: PageProps) {
                     </div>
                     
                     {lot.currentBidCents && lot.currentBidCents > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium text-gray-900">Final Bid</span>
-                        <span className="text-lg font-bold text-green-600">
-                          {formatCurrency(lot.currentBidCents)}
-                        </span>
-                      </div>
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium text-gray-900">Final Bid</span>
+                          <span className="text-lg font-bold text-green-600">
+                            {formatCurrency(lot.currentBidCents)}
+                          </span>
+                        </div>
+                        {lot.reserveCents && lot.reserveCents > 0 && (
+                          lot.currentBidCents >= lot.reserveCents ? (
+                            <div className="flex items-center gap-1 text-xs font-medium text-green-700">
+                              <span>&#10003;</span> Reserve met
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 text-xs font-medium text-amber-600">
+                              <span>&#9888;</span> Reserve not met
+                            </div>
+                          )
+                        )}
+                      </>
                     )}
                     
                     {(!lot.currentBidCents || lot.currentBidCents === 0) && (

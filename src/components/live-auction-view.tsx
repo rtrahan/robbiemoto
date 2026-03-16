@@ -163,6 +163,8 @@ function LotCard({ lot: initialLot, onLotUpdate }: { lot: any; onLotUpdate: () =
   
   const currentBid = lot.currentBidCents || lot.startingBidCents
   const minNextBid = currentBid + 500 // $5 increment
+  const hasReserve = lot.reserveCents && lot.reserveCents > 0
+  const reserveMet = hasReserve && lot.currentBidCents >= lot.reserveCents
   
   // Calculate if item is closed
   const effectiveEndTime = lot.effectiveEndTime || lot.auction?.endsAt
@@ -544,7 +546,17 @@ function LotCard({ lot: initialLot, onLotUpdate }: { lot: any; onLotUpdate: () =
             </p>
           )}
           
-          {/* Item-specific countdown for extended bidding removed reserve met indicator */}
+          {hasReserve && lot.currentBidCents > 0 && (
+            reserveMet ? (
+              <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1 w-fit">
+                <span>&#10003;</span> Reserve met
+              </div>
+            ) : (
+              <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 w-fit">
+                <span>&#9888;</span> Reserve not met
+              </div>
+            )
+          )}
           
           {newBidFlash && (
             <div className="text-xs text-yellow-700 font-medium mt-2 animate-pulse">
