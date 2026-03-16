@@ -65,25 +65,25 @@ export default function EditAuctionPage() {
         if (auctionRes.ok) {
           const auction = await auctionRes.json()
           
-          // Convert UTC dates to local datetime-local format
           const startDate = new Date(auction.startsAt)
           const endDate = new Date(auction.endsAt)
-          
-          // Format for datetime-local: YYYY-MM-DDTHH:MM (in local timezone)
-          const formatForInput = (date: Date) => {
-            const year = date.getFullYear()
+
+          const formatForDisplay = (date: Date) => {
             const month = String(date.getMonth() + 1).padStart(2, '0')
             const day = String(date.getDate()).padStart(2, '0')
-            const hours = String(date.getHours()).padStart(2, '0')
+            const year = date.getFullYear()
+            let hours = date.getHours()
             const minutes = String(date.getMinutes()).padStart(2, '0')
-            return `${year}-${month}-${day}T${hours}:${minutes}`
+            const ampm = hours >= 12 ? 'PM' : 'AM'
+            hours = hours % 12 || 12
+            return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`
           }
-          
+
           setFormData({
             name: auction.name,
             description: auction.description || '',
-            startsAt: formatForInput(startDate),
-            endsAt: formatForInput(endDate),
+            startsAt: formatForDisplay(startDate),
+            endsAt: formatForDisplay(endDate),
             published: auction.published,
           })
         }
@@ -102,27 +102,42 @@ export default function EditAuctionPage() {
     fetchData()
   }, [auctionId])
   
+  const parseDisplayDate = (str: string): Date | null => {
+    if (!str) return null
+    const match = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})\s*(am|pm)$/i)
+    if (!match) return null
+    const [, mo, d, y, h, min, ampm] = match
+    let hours = parseInt(h, 10)
+    if (ampm.toLowerCase() === 'pm' && hours < 12) hours += 12
+    if (ampm.toLowerCase() === 'am' && hours === 12) hours = 0
+    const date = new Date(parseInt(y), parseInt(mo) - 1, parseInt(d), hours, parseInt(min))
+    return Number.isNaN(date.getTime()) ? null : date
+  }
+
   const handleSubmit = async () => {
-    if (!formData.startsAt || !formData.endsAt) {
-      toast.error('Start and end dates are required')
+    const start = parseDisplayDate(formData.startsAt)
+    const end = parseDisplayDate(formData.endsAt)
+
+    if (!start || !end) {
+      toast.error('Enter valid dates in MM/DD/YYYY H:MM AM/PM format')
       return
     }
-    
+    if (end <= start) {
+      toast.error('End must be after start')
+      return
+    }
+
     setIsLoading(true)
-    
+
     try {
-      // datetime-local gives us "2025-10-20T18:00" with NO timezone
-      // We need to append timezone offset to make it local time
-      // Then convert to UTC for storage
-      
       const response = await fetch(`/api/admin/auctions/${auctionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
           description: formData.description,
-          startsAt: formData.startsAt, // Send raw - backend will handle properly
-          endsAt: formData.endsAt, // Send raw - backend will handle properly  
+          startsAt: start.toISOString(),
+          endsAt: end.toISOString(),
           published: formData.published,
           softCloseWindowSec: 120,
           softCloseExtendSec: 120,
@@ -130,14 +145,12 @@ export default function EditAuctionPage() {
           featured: false,
         }),
       })
-      
+
       if (!response.ok) {
         throw new Error('Failed to save')
       }
-      
+
       toast.success('Auction saved!')
-      
-      // Refresh the page to show updated dates
       window.location.reload()
     } catch (error) {
       toast.error('Failed to save auction')
@@ -507,25 +520,21 @@ export default function EditAuctionPage() {
               <div className="space-y-1.5">
                 <Label className="text-xs">Start Date & Time *</Label>
                 <Input
-                  type="datetime-local"
+                  type="text"
                   value={formData.startsAt}
                   onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
+                  placeholder="MM/DD/YYYY H:MM AM/PM"
                 />
-                <p className="text-xs text-blue-600">
-                  Set in YOUR timezone - system handles the rest
-                </p>
               </div>
 
               <div className="space-y-1.5">
                 <Label className="text-xs">End Date & Time *</Label>
                 <Input
-                  type="datetime-local"
+                  type="text"
                   value={formData.endsAt}
                   onChange={(e) => setFormData({ ...formData, endsAt: e.target.value })}
+                  placeholder="MM/DD/YYYY H:MM AM/PM"
                 />
-                <p className="text-xs text-blue-600">
-                  Users worldwide will see this in their local time
-                </p>
               </div>
 
               <div className="flex items-center justify-between py-3 border-t">
