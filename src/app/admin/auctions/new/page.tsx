@@ -1,12 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import { generateUniqueSlug } from '@/lib/helpers'
@@ -15,28 +13,31 @@ import Link from 'next/link'
 
 export default function NewAuctionPage() {
   const router = useRouter()
+  const formRef = useRef<HTMLFormElement>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    startsAt: '',
-    endsAt: '',
-    published: false,
-  })
-  
-  const handleSubmit = async () => {
+  const [published, setPublished] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    const fd = new FormData(e.currentTarget)
+    const name = (fd.get('name') as string)?.trim() ?? ''
+    const description = (fd.get('description') as string)?.trim() ?? ''
+    const startsAt = (fd.get('startsAt') as string) ?? ''
+    const endsAt = (fd.get('endsAt') as string) ?? ''
+
     const missing: string[] = []
-    if (!formData.name?.trim()) missing.push('Name')
-    if (!formData.startsAt) missing.push('Start Date & Time')
-    if (!formData.endsAt) missing.push('End Date & Time')
+    if (!name) missing.push('Name')
+    if (!startsAt) missing.push('Start Date & Time')
+    if (!endsAt) missing.push('End Date & Time')
 
     if (missing.length > 0) {
       toast.error(`Please fill in: ${missing.join(', ')}`)
       return
     }
 
-    const start = new Date(formData.startsAt)
-    const end = new Date(formData.endsAt)
+    const start = new Date(startsAt)
+    const end = new Date(endsAt)
     if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
       toast.error('Please choose valid start and end dates')
       return
@@ -45,36 +46,32 @@ export default function NewAuctionPage() {
       toast.error('End date must be after start date')
       return
     }
-    // Browsers often don't support datetime-local far in the future (e.g. year 2326)
-    const maxYear = new Date().getFullYear() + 20
-    if (end.getFullYear() > maxYear || start.getFullYear() > maxYear) {
-      toast.error(`Dates must be within the next 20 years (before ${maxYear + 1}). Browsers don't support dates too far in the future.`)
-      return
-    }
-    
+
     setIsLoading(true)
-    
+
     try {
       const response = await fetch('/api/admin/auctions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
-          slug: generateUniqueSlug(formData.name),
-          startsAt: new Date(formData.startsAt).toISOString(),
-          endsAt: new Date(formData.endsAt).toISOString(),
+          name,
+          description: description || undefined,
+          slug: generateUniqueSlug(name),
+          startsAt: start.toISOString(),
+          endsAt: end.toISOString(),
+          published,
           softCloseWindowSec: 120,
           softCloseExtendSec: 120,
           fixedIncrementCents: 500,
           featured: false,
         }),
       })
-      
+
       if (!response.ok) {
         const error = await response.json()
         throw new Error(error.message || 'Failed to create auction')
       }
-      
+
       const auction = await response.json()
       toast.success('Auction created! Now add items.')
       router.push(`/admin/auctions/${auction.id}/edit`)
@@ -84,13 +81,12 @@ export default function NewAuctionPage() {
       setIsLoading(false)
     }
   }
-  
+
   return (
     <div className="max-w-2xl">
-      {/* Top Bar */}
       <div className="flex items-center gap-3 mb-6">
         <Link href="/admin/auctions">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" type="button">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
@@ -100,51 +96,57 @@ export default function NewAuctionPage() {
         </div>
       </div>
 
-      {/* Simple Card Form */}
       <Card className="p-6">
-        <div className="space-y-5">
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
           <div>
             <h2 className="font-semibold mb-4">Auction Details</h2>
           </div>
 
           <div className="space-y-2">
-            <Label>Name *</Label>
-            <Input
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            <Label htmlFor="name">Name *</Label>
+            <input
+              id="name"
+              name="name"
+              type="text"
               placeholder="February Collection 2025"
               autoFocus
+              required
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Description</Label>
-            <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            <Label htmlFor="description">Description</Label>
+            <textarea
+              id="description"
+              name="description"
               placeholder="A collection of handcrafted ceramic mugs..."
               rows={3}
-              className="resize-none"
+              className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs outline-none resize-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
             />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Start Date & Time *</Label>
-              <Input
+              <Label htmlFor="startsAt">Start Date & Time *</Label>
+              <input
+                id="startsAt"
+                name="startsAt"
                 type="datetime-local"
-                value={formData.startsAt}
-                onChange={(e) => setFormData(prev => ({ ...prev, startsAt: e.target.value }))}
+                required
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
               />
               <p className="text-xs text-muted-foreground">First Saturday, 8pm recommended</p>
             </div>
 
             <div className="space-y-2">
-              <Label>End Date & Time *</Label>
-              <Input
+              <Label htmlFor="endsAt">End Date & Time *</Label>
+              <input
+                id="endsAt"
+                name="endsAt"
                 type="datetime-local"
-                value={formData.endsAt}
-                onChange={(e) => setFormData(prev => ({ ...prev, endsAt: e.target.value }))}
+                required
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
               />
               <p className="text-xs text-muted-foreground">3 days after start</p>
             </div>
@@ -156,8 +158,8 @@ export default function NewAuctionPage() {
               <p className="text-xs text-muted-foreground">Make visible on site</p>
             </div>
             <Switch
-              checked={formData.published}
-              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, published: checked }))}
+              checked={published}
+              onCheckedChange={setPublished}
             />
           </div>
 
@@ -170,7 +172,7 @@ export default function NewAuctionPage() {
 
           <div className="flex gap-2 pt-4 border-t">
             <Button
-              onClick={handleSubmit}
+              type="submit"
               disabled={isLoading}
               className="flex-1"
             >
@@ -181,6 +183,7 @@ export default function NewAuctionPage() {
               )}
             </Button>
             <Button
+              type="button"
               variant="outline"
               onClick={() => router.push('/admin/auctions')}
             >
@@ -194,7 +197,7 @@ export default function NewAuctionPage() {
               After creating the auction, you'll add ~12 ceramic items with photos to this drop.
             </p>
           </div>
-        </div>
+        </form>
       </Card>
     </div>
   )
