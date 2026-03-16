@@ -143,7 +143,7 @@ export function LiveAuctionView({ auction }: LiveAuctionViewProps) {
           {lots.length} {lots.length === 1 ? 'Item' : 'Items'} Available
         </h2>
         
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-3 sm:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {lots.map((lot) => (
             <LotCard key={lot.id} lot={lot} onLotUpdate={refreshLots} />
           ))}
@@ -399,42 +399,24 @@ function LotCard({ lot: initialLot, onLotUpdate }: { lot: any; onLotUpdate: () =
   const isInSoftClose = lot.isExtended || (lot.effectiveEndTime && new Date(lot.effectiveEndTime) > new Date(lot.auction?.endsAt))
   
   return (
-    <div className={`group border-2 bg-white transition-all ${
+    <div className={`group rounded-lg overflow-hidden border bg-white transition-all ${
       isClosed
-        ? 'border-gray-400 opacity-75'
+        ? 'border-gray-300 opacity-70'
         : isWinning 
-        ? 'border-green-500 shadow-lg shadow-green-100 hover:border-green-600' 
+        ? 'border-green-500 shadow-md shadow-green-100' 
         : isInSoftClose
-        ? 'border-orange-500 shadow-lg shadow-orange-100 hover:border-orange-600'
-        : 'border-gray-200 hover:border-gray-400'
+        ? 'border-orange-500 shadow-md shadow-orange-100'
+        : 'border-gray-200'
     }`}>
-      {/* Media Carousel */}
-      <div className="aspect-square bg-gray-50 overflow-hidden relative">
-        {/* Per-Item Countdown Timer */}
-        {effectiveEndTime && !isClosed && (
-          <ItemCountdown 
-            key={lot.effectiveEndTime} 
-            endsAt={effectiveEndTime} 
-            isExtended={lot.isExtended}
-          />
-        )}
-        {isClosed && (
-          <div className="absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold shadow-md bg-gray-800 text-white z-10">
-            Closed
-          </div>
-        )}
+      {/* Image — shorter on mobile */}
+      <div className="aspect-[4/3] sm:aspect-square bg-gray-50 overflow-hidden relative">
         {lot.mediaUrls && lot.mediaUrls.length > 0 ? (
           <>
-            {/* Current Media */}
             {isVideo(lot.mediaUrls[currentMediaIndex]) ? (
               <video 
                 key={currentMediaIndex}
                 src={lot.mediaUrls[currentMediaIndex]}
-                autoPlay
-                muted
-                loop
-                playsInline
-                controls
+                autoPlay muted loop playsInline controls
                 className="w-full h-full object-cover"
                 poster={lot.mediaUrls.find((url: string) => !isVideo(url))}
               />
@@ -446,224 +428,138 @@ function LotCard({ lot: initialLot, onLotUpdate }: { lot: any; onLotUpdate: () =
               />
             )}
             
-            {/* Navigation Arrows - only show if multiple media */}
             {lot.mediaUrls.length > 1 && (
               <>
-                <button
-                  onClick={prevMedia}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition-all"
-                  aria-label="Previous"
-                >
-                  ‹
-                </button>
-                <button
-                  onClick={nextMedia}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition-all"
-                  aria-label="Next"
-                >
-                  ›
-                </button>
-                
-                {/* Media Indicators */}
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                <button onClick={prevMedia} className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm" aria-label="Previous">‹</button>
+                <button onClick={nextMedia} className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm" aria-label="Next">›</button>
+                <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
                   {lot.mediaUrls.map((_: any, idx: number) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentMediaIndex(idx)}
-                      className={`transition-all ${
-                        idx === currentMediaIndex 
-                          ? 'w-6 h-1.5 bg-white' 
-                          : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/75'
-                      } rounded-full`}
-                      aria-label={`Go to media ${idx + 1}`}
-                    />
+                    <button key={idx} onClick={() => setCurrentMediaIndex(idx)} className={`rounded-full transition-all ${idx === currentMediaIndex ? 'w-4 h-1 bg-white' : 'w-1 h-1 bg-white/50'}`} aria-label={`Media ${idx + 1}`} />
                   ))}
                 </div>
-                
-                {/* Media Type Badge */}
-                {isVideo(lot.mediaUrls[currentMediaIndex]) && (
-                  <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
-                    <span>▶</span> Video
-                  </div>
-                )}
               </>
             )}
           </>
         ) : (
           <div className="flex h-full items-center justify-center">
-            <div className="text-center">
-              <div className="text-6xl opacity-20 mb-2">🏺</div>
-              <p className="text-xs uppercase tracking-wider text-gray-400 px-4">
-                {lot.title}
-              </p>
-            </div>
+            <div className="text-5xl opacity-15">🏺</div>
           </div>
         )}
       </div>
 
-      {/* Details */}
-      <div className="p-4 space-y-4">
+      {/* Info */}
+      <div className="p-2.5 sm:p-3 space-y-2">
+        {/* Row 1: Item # + title + timer */}
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+          <div className="flex items-center justify-between gap-1 mb-0.5">
+            <span className="text-[9px] sm:text-[10px] font-mono text-gray-400 shrink-0">
               #{(lot.itemIndex ?? 0) + 1}
             </span>
-            {effectiveEndTime && (
-              <span className="text-[10px] text-gray-400">
-                Closes {new Date(effectiveEndTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-              </span>
+            {!isClosed && effectiveEndTime && (
+              <div className="flex items-center gap-1 shrink-0">
+                <ItemCountdown key={lot.effectiveEndTime} endsAt={effectiveEndTime} isExtended={lot.isExtended} inline />
+              </div>
+            )}
+            {isClosed && (
+              <span className="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase">Closed</span>
             )}
           </div>
-          <h3 className="font-serif text-lg font-light text-gray-900 mb-1 line-clamp-2">
+          <h3 className="text-sm sm:text-base font-medium text-gray-900 leading-tight line-clamp-2">
             {lot.title}
           </h3>
-          {lot.condition && (
-            <p className="text-xs text-gray-500">{lot.condition}</p>
-          )}
         </div>
 
-        {/* Current Bid */}
-        <div className={`border-t pt-3 transition-all ${
-          newBidFlash ? 'bg-yellow-50 -mx-4 px-4 py-3 border-yellow-200' : 
-          isWinning ? 'bg-green-50 -mx-4 px-4 py-3 border-green-200' : 
-          'border-gray-100'
+        {/* Row 2: Price + reserve */}
+        <div className={`rounded-md px-2 py-1.5 -mx-0.5 transition-all ${
+          newBidFlash ? 'bg-yellow-50' : 
+          isWinning ? 'bg-green-50' : 
+          'bg-gray-50'
         }`}>
-          <div className="flex items-center justify-between mb-1">
-            <div className={`text-[10px] uppercase tracking-wider ${
-              isWinning ? 'text-green-700 font-semibold' : 'text-gray-500'
+          <div className="flex items-baseline justify-between">
+            <span className={`text-lg sm:text-xl font-bold tabular-nums ${
+              isWinning ? 'text-green-700' : 'text-gray-900'
             }`}>
-              {lot.currentBidCents ? 'Current Bid' : 'Starting Bid'}
-            </div>
-            {isWinning && (
-              <span className="text-[10px] text-green-700 font-bold">
-                🏆 You're Winning!
-              </span>
-            )}
+              {formatCurrency(currentBid)}
+            </span>
+            <span className={`text-[10px] ${isWinning ? 'text-green-600' : 'text-gray-400'}`}>
+              {lot.currentBidCents ? `${lot._count?.bids || 0} bid${(lot._count?.bids || 0) !== 1 ? 's' : ''}` : 'Start'}
+            </span>
           </div>
-          
-          <div className={`font-serif text-2xl font-light ${
-            isWinning ? 'text-green-700' : 'text-gray-900'
-          }`}>
-            {formatCurrency(currentBid)}
-          </div>
-          
-          {lastBidder && lot.currentBidCents && (
-            <p className={`text-xs mt-1 ${
-              isWinning ? 'text-green-700 font-medium' : 'text-gray-600'
-            }`}>
-              {isWinning ? 'Your bid' : lastBidder} • {lot._count.bids} {lot._count.bids === 1 ? 'bid' : 'bids'}
-            </p>
+
+          {isWinning && (
+            <p className="text-[10px] text-green-700 font-semibold mt-0.5">🏆 You're winning</p>
           )}
-          
-          {!lastBidder && lot._count?.bids > 0 && (
-            <p className="text-xs text-gray-400 mt-1">
-              {lot._count.bids} {lot._count.bids === 1 ? 'bid' : 'bids'}
-            </p>
-          )}
-          
+
           {hasReserve && lot.currentBidCents > 0 && (
-            reserveMet ? (
-              <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1 w-fit">
-                <span>&#10003;</span> Reserve met
-              </div>
-            ) : (
-              <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 w-fit">
-                <span>&#9888;</span> Reserve not met
-              </div>
-            )
+            <p className={`text-[10px] font-medium mt-0.5 ${reserveMet ? 'text-green-600' : 'text-amber-600'}`}>
+              {reserveMet ? '✓ Reserve met' : '⚠ Reserve not met'}
+            </p>
           )}
-          
+
           {newBidFlash && (
-            <div className="text-xs text-yellow-700 font-medium mt-2 animate-pulse">
-              ⚡ New bid just placed!
-            </div>
+            <p className="text-[10px] text-yellow-700 font-medium mt-0.5 animate-pulse">⚡ New bid!</p>
           )}
         </div>
 
-        {/* Bidding Actions */}
-        <div className="space-y-2">
-          {!isLoggedIn && (
-            <a 
-              href="/login"
-              className="block bg-blue-50 border border-blue-200 rounded p-3 mb-2 hover:bg-blue-100 transition-colors cursor-pointer"
+        {/* Row 3: Actions */}
+        {!isClosed ? (
+          <div className="space-y-1.5">
+            {!isLoggedIn && (
+              <a href="/login" className="block text-center text-[10px] text-blue-600 font-medium py-1">
+                Sign in to bid →
+              </a>
+            )}
+            <Button 
+              onClick={isLoggedIn ? handleQuickBid : () => window.location.href = '/login'}
+              disabled={isSubmitting}
+              className="w-full h-8 sm:h-9 text-xs sm:text-sm"
+              size="sm"
             >
-              <p className="text-xs text-blue-700 text-center font-medium">
-                🔒 Sign in to place a bid →
-              </p>
-            </a>
-          )}
-          
-          {/* Bidding Controls - Only show if item is still open */}
-          {!isClosed ? (
-            <>
-              {/* Quick Bid Button */}
-              <Button 
-                onClick={isLoggedIn ? handleQuickBid : () => window.location.href = '/login'}
-                disabled={isSubmitting}
-                className="w-full"
-                size="lg"
-              >
-                <Gavel className="mr-2 h-4 w-4" />
-                {isLoggedIn ? `Bid ${formatCurrency(minNextBid)}` : 'Sign In to Bid'}
+              <Gavel className="mr-1.5 h-3.5 w-3.5" />
+              {isLoggedIn ? `Bid ${formatCurrency(minNextBid)}` : 'Sign In'}
+            </Button>
+
+            <div className="flex gap-1.5">
+              <div className="relative flex-1">
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
+                <Input
+                  type="number"
+                  step="5"
+                  min={(minNextBid / 100).toFixed(2)}
+                  placeholder={(minNextBid / 100).toFixed(0)}
+                  value={bidAmount}
+                  onChange={(e) => setBidAmount(e.target.value)}
+                  className="pl-5 h-8 text-xs"
+                  disabled={isSubmitting}
+                />
+              </div>
+              <Button onClick={handleCustomBid} disabled={isSubmitting || !bidAmount} variant="outline" size="sm" className="h-8 px-3 text-xs">
+                Bid
               </Button>
-
-              {/* Custom Bid */}
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                    $
-                  </span>
-                  <Input
-                    type="number"
-                    step="5"
-                    min={(minNextBid / 100).toFixed(2)}
-                    placeholder={(minNextBid / 100).toFixed(2)}
-                    value={bidAmount}
-                    onChange={(e) => setBidAmount(e.target.value)}
-                    className="pl-6"
-                    disabled={isSubmitting}
-                  />
-                </div>
-                <Button 
-                  onClick={handleCustomBid}
-                  disabled={isSubmitting || !bidAmount}
-                  variant="outline"
-                >
-                  Bid
-                </Button>
-              </div>
-            </>
+            </div>
+          </div>
+        ) : (
+          isWinning ? (
+            <div className="bg-green-50 border border-green-300 rounded-md p-3 text-center">
+              <p className="text-sm font-bold text-green-700">🏆 You Won!</p>
+              <p className="text-[10px] text-green-600 mt-0.5">We'll contact you about shipping.</p>
+            </div>
+          ) : lot._count?.bids > 0 && currentUser ? (
+            <div className="bg-red-50 border border-red-200 rounded-md p-2 text-center">
+              <p className="text-xs font-bold text-red-700">Outbid</p>
+            </div>
           ) : (
-            // Closed state - show if user won or lost
-            isWinning ? (
-              <div className="bg-green-50 border-2 border-green-400 rounded-lg p-6 text-center">
-                <p className="text-2xl mb-2">🏆</p>
-                <p className="text-lg font-bold text-green-700 mb-1">You Won!</p>
-                <p className="text-sm text-green-600">Congratulations! We'll contact you about shipping.</p>
-              </div>
-            ) : lot._count?.bids > 0 && currentUser ? (
-              <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6 text-center">
-                <p className="text-lg font-bold text-red-700 mb-1">Outbid</p>
-                <p className="text-sm text-red-600">You didn't win this item</p>
-              </div>
-            ) : (
-              <div className="bg-gray-100 border-2 border-gray-300 rounded-lg p-6 text-center">
-                <p className="text-lg font-bold text-gray-700 mb-1">⏰ Bidding Closed</p>
-                <p className="text-sm text-gray-600">This item is no longer accepting bids</p>
-              </div>
-            )
-          )}
+            <div className="bg-gray-50 border border-gray-200 rounded-md p-2 text-center">
+              <p className="text-xs font-bold text-gray-500">Bidding Closed</p>
+            </div>
+          )
+        )}
 
-          {/* Bid History Toggle */}
-          {lot._count?.bids > 0 && (
-            <button
-              onClick={toggleBidHistory}
-              className="w-full text-xs text-gray-500 hover:text-gray-700 py-2 border-t hover:bg-gray-50 transition-colors"
-            >
-              📊 View Bid History ({lot._count.bids})
-            </button>
-          )}
-        </div>
+        {lot._count?.bids > 0 && (
+          <button onClick={toggleBidHistory} className="w-full text-[10px] text-gray-400 hover:text-gray-600 py-1 transition-colors">
+            View bids ({lot._count.bids})
+          </button>
+        )}
       </div>
       
       {/* Bid History Modal */}

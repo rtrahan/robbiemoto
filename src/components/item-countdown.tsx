@@ -6,14 +6,14 @@ import { Clock } from 'lucide-react'
 interface ItemCountdownProps {
   endsAt: Date | string
   isExtended?: boolean
+  inline?: boolean
 }
 
-export function ItemCountdown({ endsAt, isExtended }: ItemCountdownProps) {
+export function ItemCountdown({ endsAt, isExtended, inline }: ItemCountdownProps) {
   const [timeRemaining, setTimeRemaining] = useState('')
   const [isUrgent, setIsUrgent] = useState(false)
 
   useEffect(() => {
-    // Reset immediately when endsAt changes
     const updateTime = () => {
       const now = new Date().getTime()
       const end = new Date(endsAt).getTime()
@@ -25,32 +25,45 @@ export function ItemCountdown({ endsAt, isExtended }: ItemCountdownProps) {
         return false
       }
 
-      const minutes = Math.floor(distance / (1000 * 60))
+      const hours = Math.floor(distance / (1000 * 60 * 60))
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
       const seconds = Math.floor((distance % (1000 * 60)) / 1000)
 
-      setIsUrgent(distance < 60000) // Last minute
+      setIsUrgent(distance < 60000)
 
-      setTimeRemaining(`${minutes}:${seconds.toString().padStart(2, '0')}`)
+      if (hours > 0) {
+        setTimeRemaining(`${hours}h ${minutes}m`)
+      } else {
+        setTimeRemaining(`${minutes}:${seconds.toString().padStart(2, '0')}`)
+      }
       return true
     }
     
-    // Update immediately
     const shouldContinue = updateTime()
-    
     if (!shouldContinue) return
     
-    // Then update every second
     const timer = setInterval(updateTime, 1000)
-
     return () => clearInterval(timer)
   }, [endsAt])
 
-  if (!isExtended && timeRemaining === '') {
-    return null
+  if (!timeRemaining) return null
+
+  if (inline) {
+    return (
+      <span className={`text-[10px] sm:text-[11px] font-mono font-semibold tabular-nums ${
+        isUrgent
+          ? 'text-red-600 animate-pulse'
+          : isExtended
+          ? 'text-orange-600'
+          : 'text-gray-500'
+      }`}>
+        {timeRemaining}
+      </span>
+    )
   }
 
   return (
-    <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold shadow-md ${
+    <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold shadow-md z-10 ${
       isUrgent 
         ? 'bg-red-600 text-white animate-pulse' 
         : isExtended
@@ -64,4 +77,3 @@ export function ItemCountdown({ endsAt, isExtended }: ItemCountdownProps) {
     </div>
   )
 }
-
