@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -49,6 +49,19 @@ export default function EditAuctionPage() {
   const [editingFiles, setEditingFiles] = useState<any[]>([])
   const [isGeneratingAI, setIsGeneratingAI] = useState(false)
   const [isGeneratingAuctionAI, setIsGeneratingAuctionAI] = useState(false)
+  const startInputRef = useRef<HTMLInputElement>(null)
+  const endInputRef = useRef<HTMLInputElement>(null)
+  const lastStart = useRef('')
+  const lastEnd = useRef('')
+
+  const captureStart = (e: React.ChangeEvent<HTMLInputElement> | React.FormEvent<HTMLInputElement>) => {
+    const val = (e.target as HTMLInputElement).value
+    if (val) lastStart.current = val
+  }
+  const captureEnd = (e: React.ChangeEvent<HTMLInputElement> | React.FormEvent<HTMLInputElement>) => {
+    const val = (e.target as HTMLInputElement).value
+    if (val) lastEnd.current = val
+  }
   const [showBidsModal, setShowBidsModal] = useState(false)
   const [selectedLotForBids, setSelectedLotForBids] = useState<any>(null)
   const [lotBids, setLotBids] = useState<any[]>([])
@@ -65,27 +78,30 @@ export default function EditAuctionPage() {
         if (auctionRes.ok) {
           const auction = await auctionRes.json()
           
-          const startDate = new Date(auction.startsAt)
-          const endDate = new Date(auction.endsAt)
-
-          const formatForDisplay = (date: Date) => {
-            const month = String(date.getMonth() + 1).padStart(2, '0')
-            const day = String(date.getDate()).padStart(2, '0')
-            const year = date.getFullYear()
-            let hours = date.getHours()
-            const minutes = String(date.getMinutes()).padStart(2, '0')
-            const ampm = hours >= 12 ? 'PM' : 'AM'
-            hours = hours % 12 || 12
-            return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`
+          const formatForDatetimeLocal = (date: Date) => {
+            const y = date.getFullYear()
+            const mo = String(date.getMonth() + 1).padStart(2, '0')
+            const d = String(date.getDate()).padStart(2, '0')
+            const h = String(date.getHours()).padStart(2, '0')
+            const mi = String(date.getMinutes()).padStart(2, '0')
+            return `${y}-${mo}-${d}T${h}:${mi}`
           }
+
+          const startVal = formatForDatetimeLocal(new Date(auction.startsAt))
+          const endVal = formatForDatetimeLocal(new Date(auction.endsAt))
 
           setFormData({
             name: auction.name,
             description: auction.description || '',
-            startsAt: formatForDisplay(startDate),
-            endsAt: formatForDisplay(endDate),
+            startsAt: startVal,
+            endsAt: endVal,
             published: auction.published,
           })
+
+          if (startInputRef.current) startInputRef.current.value = startVal
+          if (endInputRef.current) endInputRef.current.value = endVal
+          lastStart.current = startVal
+          lastEnd.current = endVal
         }
         
         if (lotsRes.ok) {
@@ -102,24 +118,15 @@ export default function EditAuctionPage() {
     fetchData()
   }, [auctionId])
   
-  const parseDisplayDate = (str: string): Date | null => {
-    if (!str) return null
-    const match = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})\s*(am|pm)$/i)
-    if (!match) return null
-    const [, mo, d, y, h, min, ampm] = match
-    let hours = parseInt(h, 10)
-    if (ampm.toLowerCase() === 'pm' && hours < 12) hours += 12
-    if (ampm.toLowerCase() === 'am' && hours === 12) hours = 0
-    const date = new Date(parseInt(y), parseInt(mo) - 1, parseInt(d), hours, parseInt(min))
-    return Number.isNaN(date.getTime()) ? null : date
-  }
-
   const handleSubmit = async () => {
-    const start = parseDisplayDate(formData.startsAt)
-    const end = parseDisplayDate(formData.endsAt)
+    const startsAtRaw = lastStart.current || startInputRef.current?.value || formData.startsAt
+    const endsAtRaw = lastEnd.current || endInputRef.current?.value || formData.endsAt
 
-    if (!start || !end) {
-      toast.error('Enter valid dates in MM/DD/YYYY H:MM AM/PM format')
+    const start = startsAtRaw ? new Date(startsAtRaw) : null
+    const end = endsAtRaw ? new Date(endsAtRaw) : null
+
+    if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      toast.error('Please set valid start and end dates')
       return
     }
     if (end <= start) {
@@ -519,21 +526,27 @@ export default function EditAuctionPage() {
 
               <div className="space-y-1.5">
                 <Label className="text-xs">Start Date & Time *</Label>
-                <Input
-                  type="text"
-                  value={formData.startsAt}
-                  onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
-                  placeholder="MM/DD/YYYY H:MM AM/PM"
+                <input
+                  ref={startInputRef}
+                  type="datetime-local"
+                  defaultValue={formData.startsAt}
+                  onChange={captureStart}
+                  onInput={captureStart}
+                  onBlur={captureStart}
+                  className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <Label className="text-xs">End Date & Time *</Label>
-                <Input
-                  type="text"
-                  value={formData.endsAt}
-                  onChange={(e) => setFormData({ ...formData, endsAt: e.target.value })}
-                  placeholder="MM/DD/YYYY H:MM AM/PM"
+                <input
+                  ref={endInputRef}
+                  type="datetime-local"
+                  defaultValue={formData.endsAt}
+                  onChange={captureEnd}
+                  onInput={captureEnd}
+                  onBlur={captureEnd}
+                  className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
                 />
               </div>
 

@@ -11,72 +11,47 @@ import { generateUniqueSlug } from '@/lib/helpers'
 import { Loader2, ArrowLeft, Save } from 'lucide-react'
 import Link from 'next/link'
 
-function parseDateInput(dateStr: string, timeStr: string): Date | null {
-  if (!dateStr || !timeStr) return null
-
-  const dateParts = dateStr.match(/^(\d{1,2})\/?(\d{1,2})\/?(\d{4})$/)
-  if (!dateParts) return null
-
-  const month = parseInt(dateParts[1], 10)
-  const day = parseInt(dateParts[2], 10)
-  const year = parseInt(dateParts[3], 10)
-
-  const timeParts = timeStr.match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/i)
-  if (!timeParts) return null
-
-  let hours = parseInt(timeParts[1], 10)
-  const minutes = parseInt(timeParts[2], 10)
-  const ampm = timeParts[3]?.toLowerCase()
-
-  if (ampm === 'pm' && hours < 12) hours += 12
-  if (ampm === 'am' && hours === 12) hours = 0
-
-  const d = new Date(year, month - 1, day, hours, minutes)
-  if (Number.isNaN(d.getTime())) return null
-  return d
-}
-
 export default function NewAuctionPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [published, setPublished] = useState(false)
 
-  const startDateRef = useRef<HTMLInputElement>(null)
-  const startTimeRef = useRef<HTMLInputElement>(null)
-  const endDateRef = useRef<HTMLInputElement>(null)
-  const endTimeRef = useRef<HTMLInputElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
   const descRef = useRef<HTMLTextAreaElement>(null)
+
+  const lastStart = useRef('')
+  const lastEnd = useRef('')
+
+  const captureStart = (e: React.ChangeEvent<HTMLInputElement> | React.FormEvent<HTMLInputElement>) => {
+    const val = (e.target as HTMLInputElement).value
+    if (val) lastStart.current = val
+  }
+  const captureEnd = (e: React.ChangeEvent<HTMLInputElement> | React.FormEvent<HTMLInputElement>) => {
+    const val = (e.target as HTMLInputElement).value
+    if (val) lastEnd.current = val
+  }
 
   const handleSubmit = async () => {
     const name = nameRef.current?.value?.trim() ?? ''
     const description = descRef.current?.value?.trim() ?? ''
-    const startDateVal = startDateRef.current?.value?.trim() ?? ''
-    const startTimeVal = startTimeRef.current?.value?.trim() ?? ''
-    const endDateVal = endDateRef.current?.value?.trim() ?? ''
-    const endTimeVal = endTimeRef.current?.value?.trim() ?? ''
+    const startsAtRaw = lastStart.current
+    const endsAtRaw = lastEnd.current
 
     const missing: string[] = []
     if (!name) missing.push('Name')
-    if (!startDateVal) missing.push('Start Date')
-    if (!startTimeVal) missing.push('Start Time')
-    if (!endDateVal) missing.push('End Date')
-    if (!endTimeVal) missing.push('End Time')
+    if (!startsAtRaw) missing.push('Start Date & Time')
+    if (!endsAtRaw) missing.push('End Date & Time')
 
     if (missing.length > 0) {
       toast.error(`Please fill in: ${missing.join(', ')}`)
       return
     }
 
-    const start = parseDateInput(startDateVal, startTimeVal)
-    const end = parseDateInput(endDateVal, endTimeVal)
+    const start = new Date(startsAtRaw)
+    const end = new Date(endsAtRaw)
 
-    if (!start) {
-      toast.error('Could not parse start date/time. Use MM/DD/YYYY and HH:MM AM/PM.')
-      return
-    }
-    if (!end) {
-      toast.error('Could not parse end date/time. Use MM/DD/YYYY and HH:MM AM/PM.')
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      toast.error('Invalid date values')
       return
     }
     if (end <= start) {
@@ -119,9 +94,6 @@ export default function NewAuctionPage() {
     }
   }
 
-  const inputClass =
-    'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm'
-
   return (
     <div className="max-w-2xl">
       <div className="flex items-center gap-3 mb-6">
@@ -138,9 +110,7 @@ export default function NewAuctionPage() {
 
       <Card className="p-6">
         <div className="space-y-5">
-          <div>
-            <h2 className="font-semibold mb-4">Auction Details</h2>
-          </div>
+          <h2 className="font-semibold mb-4">Auction Details</h2>
 
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
@@ -150,7 +120,7 @@ export default function NewAuctionPage() {
               type="text"
               placeholder="February Collection 2025"
               autoFocus
-              className={inputClass}
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
             />
           </div>
 
@@ -165,42 +135,27 @@ export default function NewAuctionPage() {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>Start Date & Time *</Label>
-            <div className="grid grid-cols-2 gap-2">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Start *</Label>
               <input
-                ref={startDateRef}
-                type="text"
-                placeholder="MM/DD/YYYY"
-                className={inputClass}
-              />
-              <input
-                ref={startTimeRef}
-                type="text"
-                placeholder="8:00 PM"
-                className={inputClass}
+                type="datetime-local"
+                onChange={captureStart}
+                onInput={captureStart}
+                onBlur={captureStart}
+                className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
               />
             </div>
-            <p className="text-xs text-muted-foreground">First Saturday, 8pm recommended</p>
-          </div>
-
-          <div className="space-y-2">
-            <Label>End Date & Time *</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-2">
+              <Label>End *</Label>
               <input
-                ref={endDateRef}
-                type="text"
-                placeholder="MM/DD/YYYY"
-                className={inputClass}
-              />
-              <input
-                ref={endTimeRef}
-                type="text"
-                placeholder="8:00 PM"
-                className={inputClass}
+                type="datetime-local"
+                onChange={captureEnd}
+                onInput={captureEnd}
+                onBlur={captureEnd}
+                className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
               />
             </div>
-            <p className="text-xs text-muted-foreground">3 days after start</p>
           </div>
 
           <div className="flex items-center justify-between py-3 border-t">
@@ -208,10 +163,7 @@ export default function NewAuctionPage() {
               <Label>Published</Label>
               <p className="text-xs text-muted-foreground">Make visible on site</p>
             </div>
-            <Switch
-              checked={published}
-              onCheckedChange={setPublished}
-            />
+            <Switch checked={published} onCheckedChange={setPublished} />
           </div>
 
           <div className="border-t pt-4 space-y-1 text-xs text-muted-foreground">
@@ -222,32 +174,16 @@ export default function NewAuctionPage() {
           </div>
 
           <div className="flex gap-2 pt-4 border-t">
-            <Button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isLoading}
-              className="flex-1"
-            >
+            <Button type="button" onClick={handleSubmit} disabled={isLoading} className="flex-1">
               {isLoading ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...</>
               ) : (
                 <><Save className="mr-2 h-4 w-4" /> Create & Add Items</>
               )}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.push('/admin/auctions')}
-            >
+            <Button type="button" variant="outline" onClick={() => router.push('/admin/auctions')}>
               Cancel
             </Button>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm font-medium text-blue-900 mb-1">💡 Next Steps</p>
-            <p className="text-xs text-blue-700">
-              After creating the auction, you'll add ~12 ceramic items with photos to this drop.
-            </p>
           </div>
         </div>
       </Card>
