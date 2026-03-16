@@ -111,7 +111,7 @@ export default function NewAuctionPage() {
             <Label>Name *</Label>
             <Input
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               placeholder="February Collection 2025"
               autoFocus
             />
@@ -121,7 +121,7 @@ export default function NewAuctionPage() {
             <Label>Description</Label>
             <Textarea
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               placeholder="A collection of handcrafted ceramic mugs..."
               rows={3}
               className="resize-none"
@@ -134,7 +134,7 @@ export default function NewAuctionPage() {
               <Input
                 type="datetime-local"
                 value={formData.startsAt}
-                onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
+                onChange={(e) => setFormData(prev => ({ ...prev, startsAt: e.target.value }))}
               />
               <p className="text-xs text-muted-foreground">First Saturday, 8pm recommended</p>
             </div>
@@ -144,7 +144,7 @@ export default function NewAuctionPage() {
               <Input
                 type="datetime-local"
                 value={formData.endsAt}
-                onChange={(e) => setFormData({ ...formData, endsAt: e.target.value })}
+                onChange={(e) => setFormData(prev => ({ ...prev, endsAt: e.target.value }))}
               />
               <p className="text-xs text-muted-foreground">3 days after start</p>
             </div>
@@ -157,7 +157,7 @@ export default function NewAuctionPage() {
             </div>
             <Switch
               checked={formData.published}
-              onCheckedChange={(checked) => setFormData({ ...formData, published: checked })}
+              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, published: checked }))}
             />
           </div>
 
