@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { prisma } from '@/lib/prisma'
 import { formatCurrency, formatDateTime } from '@/lib/helpers'
+import { ensureUtcDates, ensureUtcDatesArray } from '@/lib/utils'
 import { getAuctionStatus } from '@/lib/auction-helpers'
 import Link from 'next/link'
 import { Gavel, Package, Plus, Calendar, TrendingUp, Users, DollarSign } from 'lucide-react'
@@ -463,7 +464,7 @@ async function getDashboardData() {
       }
       
       const auctionsWithStats = await Promise.all(
-        auctions.map(async (auction: any) => {
+        ensureUtcDatesArray(auctions).map(async (auction: any) => {
           // Get bid count for this auction's lots
           const auctionLotIds = auction.lots?.map((l: any) => l.id) || []
           
@@ -478,7 +479,8 @@ async function getDashboardData() {
           }
           
           return {
-            ...auction,
+            ...ensureUtcDates(auction),
+            lots: ensureUtcDatesArray(auction.lots || []),
             status: getAuctionStatus(auction),
             _count: { lots: auction.lots?.length || 0 },
             totalBids: bidCount,
@@ -495,7 +497,7 @@ async function getDashboardData() {
         .order('createdAt', { ascending: false })
         .limit(5)
       
-      return { auctions: auctionsWithStats, products: products || [], stats }
+      return { auctions: auctionsWithStats, products: ensureUtcDatesArray(products || []), stats }
     } catch (supabaseError) {
       console.error('Supabase also failed:', supabaseError)
       return {

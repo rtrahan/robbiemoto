@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { notFound, redirect } from 'next/navigation'
 import { formatCurrency, formatDateTime } from '@/lib/helpers'
+import { ensureUtcDates, ensureUtcDatesArray } from '@/lib/utils'
 import { getAuctionStatus } from '@/lib/auction-helpers'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -315,16 +316,17 @@ async function getAuctionResults(id: string) {
         return null
       }
       
-      // Sort bids by date (most recent first)
-      auction.lots = auction.lots.map((lot: any) => ({
-        ...lot,
-        bids: (lot.bids || []).sort((a: any, b: any) => 
+      // Sort bids by date (most recent first) and normalize UTC timestamps
+      const processed = ensureUtcDates(auction)
+      processed.lots = auction.lots.map((lot: any) => ({
+        ...ensureUtcDates(lot),
+        bids: ensureUtcDatesArray((lot.bids || []).sort((a: any, b: any) => 
           new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime()
-        ),
+        )),
         _count: { bids: lot.bids?.length || 0 },
       }))
       
-      return auction
+      return processed
     } catch (supabaseError) {
       console.error('Failed to fetch auction results:', supabaseError)
       return null

@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { prisma } from '@/lib/prisma'
 import { formatDateTime } from '@/lib/helpers'
+import { ensureUtcDates, ensureUtcDatesArray } from '@/lib/utils'
 import { getAuctionStatus } from '@/lib/auction-helpers'
 import Link from 'next/link'
 import { Plus, Edit, Trash2, Trophy } from 'lucide-react'
@@ -192,11 +193,11 @@ async function getAuctionsWithLots() {
         return []
       }
       
-      return auctions
+      const mapped = auctions
         .map((auction: any) => ({
-          ...auction,
+          ...ensureUtcDates(auction),
           _count: { lots: auction.lots?.length || 0 },
-          lots: auction.lots?.slice(0, 7) || [],
+          lots: ensureUtcDatesArray(auction.lots?.slice(0, 7) || []),
         }))
         .sort((a: any, b: any) => {
           const statusA = getAuctionStatus(a)
@@ -209,6 +210,7 @@ async function getAuctionsWithLots() {
           
           return new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
         })
+      return mapped
     } catch (supabaseError) {
       console.error('All database connections failed:', supabaseError)
       return []
