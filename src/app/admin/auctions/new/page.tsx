@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -13,7 +13,6 @@ import Link from 'next/link'
 
 export default function NewAuctionPage() {
   const router = useRouter()
-  const formRef = useRef<HTMLFormElement>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [published, setPublished] = useState(false)
 
@@ -23,27 +22,32 @@ export default function NewAuctionPage() {
     const fd = new FormData(e.currentTarget)
     const name = (fd.get('name') as string)?.trim() ?? ''
     const description = (fd.get('description') as string)?.trim() ?? ''
-    const startsAt = (fd.get('startsAt') as string) ?? ''
-    const endsAt = (fd.get('endsAt') as string) ?? ''
+    const startDate = (fd.get('startDate') as string) ?? ''
+    const startTime = (fd.get('startTime') as string) ?? ''
+    const endDate = (fd.get('endDate') as string) ?? ''
+    const endTime = (fd.get('endTime') as string) ?? ''
 
     const missing: string[] = []
     if (!name) missing.push('Name')
-    if (!startsAt) missing.push('Start Date & Time')
-    if (!endsAt) missing.push('End Date & Time')
+    if (!startDate) missing.push('Start Date')
+    if (!startTime) missing.push('Start Time')
+    if (!endDate) missing.push('End Date')
+    if (!endTime) missing.push('End Time')
 
     if (missing.length > 0) {
       toast.error(`Please fill in: ${missing.join(', ')}`)
       return
     }
 
-    const start = new Date(startsAt)
-    const end = new Date(endsAt)
+    const start = new Date(`${startDate}T${startTime}`)
+    const end = new Date(`${endDate}T${endTime}`)
+
     if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-      toast.error('Please choose valid start and end dates')
+      toast.error('Invalid date or time values')
       return
     }
     if (end <= start) {
-      toast.error('End date must be after start date')
+      toast.error('End date/time must be after start date/time')
       return
     }
 
@@ -82,6 +86,9 @@ export default function NewAuctionPage() {
     }
   }
 
+  const inputClass =
+    'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm'
+
   return (
     <div className="max-w-2xl">
       <div className="flex items-center gap-3 mb-6">
@@ -97,7 +104,7 @@ export default function NewAuctionPage() {
       </div>
 
       <Card className="p-6">
-        <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <h2 className="font-semibold mb-4">Auction Details</h2>
           </div>
@@ -110,8 +117,7 @@ export default function NewAuctionPage() {
               type="text"
               placeholder="February Collection 2025"
               autoFocus
-              required
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
+              className={inputClass}
             />
           </div>
 
@@ -126,30 +132,40 @@ export default function NewAuctionPage() {
             />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="startsAt">Start Date & Time *</Label>
+          {/* Start */}
+          <div className="space-y-2">
+            <Label>Start Date & Time *</Label>
+            <div className="grid grid-cols-2 gap-2">
               <input
-                id="startsAt"
-                name="startsAt"
-                type="datetime-local"
-                required
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
+                name="startDate"
+                type="date"
+                className={inputClass}
               />
-              <p className="text-xs text-muted-foreground">First Saturday, 8pm recommended</p>
+              <input
+                name="startTime"
+                type="time"
+                className={inputClass}
+              />
             </div>
+            <p className="text-xs text-muted-foreground">First Saturday, 8pm recommended</p>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="endsAt">End Date & Time *</Label>
+          {/* End */}
+          <div className="space-y-2">
+            <Label>End Date & Time *</Label>
+            <div className="grid grid-cols-2 gap-2">
               <input
-                id="endsAt"
-                name="endsAt"
-                type="datetime-local"
-                required
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
+                name="endDate"
+                type="date"
+                className={inputClass}
               />
-              <p className="text-xs text-muted-foreground">3 days after start</p>
+              <input
+                name="endTime"
+                type="time"
+                className={inputClass}
+              />
             </div>
+            <p className="text-xs text-muted-foreground">3 days after start</p>
           </div>
 
           <div className="flex items-center justify-between py-3 border-t">
