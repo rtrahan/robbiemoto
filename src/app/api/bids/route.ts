@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Get the lot with auction data for soft close calculation
+      // Get the lot with auction data for stagger + soft close calculation
       const lot = await prisma.lot.findUnique({
         where: { id: lotId },
         include: {
@@ -58,6 +58,7 @@ export async function POST(request: NextRequest) {
           },
           auction: {
             select: {
+              id: true,
               endsAt: true,
               softCloseWindowSec: true,
               softCloseExtendSec: true,
@@ -70,16 +71,25 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Lot not found' }, { status: 404 })
       }
       
-      // Calculate effective end time with soft close
-      const { calculateItemEndTime } = await import('@/lib/soft-close')
+      // Find this lot's position for staggered closing
+      const allLots = await prisma.lot.findMany({
+        where: { auctionId: lot.auction.id, published: true },
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+        select: { id: true },
+      })
+      const itemIndex = allLots.findIndex(l => l.id === lotId)
+      
+      // Calculate staggered + soft close end time
+      const { getStaggeredEndTime, calculateItemEndTime } = await import('@/lib/soft-close')
+      const baseEndTime = getStaggeredEndTime(lot.auction.endsAt, Math.max(itemIndex, 0))
       const itemEndTime = calculateItemEndTime(
-        lot.auction.endsAt,
+        baseEndTime,
         lot.lastBidAt,
         lot.auction.softCloseWindowSec,
         lot.auction.softCloseExtendSec
       )
       
-      // Check if item is still open (even if auction technically ended)
+      // Check if item is still open
       if (new Date() > itemEndTime) {
         return NextResponse.json(
           { error: 'Bidding has closed for this item' },
@@ -170,7 +180,44 @@ export async function POST(request: NextRequest) {
         )
       }
       
-      // Find user in Supabase - try multiple ways
+      // Validate item is still open (staggered + soft close)
+      const { data: lotCheck } = await supabaseServer
+        .from('Lot')
+        .select('auctionId, lastBidAt, sortOrder, createdAt')
+        .eq('id', lotId)
+        .single()
+
+      if (lotCheck) {
+        const { data: auctionCheck } = await supabaseServer
+          .from('Auction')
+          .select('endsAt, softCloseWindowSec, softCloseExtendSec')
+          .eq('id', lotCheck.auctionId)
+          .single()
+
+        if (auctionCheck) {
+          const { data: allLotsCheck } = await supabaseServer
+            .from('Lot')
+            .select('id')
+            .eq('auctionId', lotCheck.auctionId)
+            .eq('published', true)
+            .order('sortOrder', { ascending: true })
+            .order('createdAt', { ascending: true })
+
+          const idx = allLotsCheck?.findIndex((l: any) => l.id === lotId) ?? 0
+          const endsAtStr = auctionCheck.endsAt + (auctionCheck.endsAt.endsWith('Z') ? '' : 'Z')
+          const lastBidStr = lotCheck.lastBidAt ? (lotCheck.lastBidAt.endsWith('Z') ? lotCheck.lastBidAt : lotCheck.lastBidAt + 'Z') : null
+
+          const { getStaggeredEndTime, calculateItemEndTime } = await import('@/lib/soft-close')
+          const baseEnd = getStaggeredEndTime(endsAtStr, Math.max(idx, 0))
+          const itemEnd = calculateItemEndTime(baseEnd, lastBidStr, auctionCheck.softCloseWindowSec ?? 120, auctionCheck.softCloseExtendSec ?? 120)
+
+          if (new Date() > itemEnd) {
+            return NextResponse.json({ error: 'Bidding has closed for this item' }, { status: 400 })
+          }
+        }
+      }
+
+      // Find user in Supabase
       console.log('Looking for user:', authUser.email)
       
       let { data: users } = await supabaseServer

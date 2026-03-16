@@ -33,25 +33,24 @@ export async function GET(
         },
       })
       
-      // Calculate soft close end times for each lot
-      const { calculateItemEndTime } = await import('@/lib/soft-close')
-      const lotsWithSoftClose = lots.map(lot => {
-        const itemEndTime = calculateItemEndTime(
-          lot.auction.endsAt,
+      // Calculate staggered + soft close end times for each lot
+      const { getStaggeredEndTime, calculateItemEndTime } = await import('@/lib/soft-close')
+      const lotsWithSoftClose = lots.map((lot, index) => {
+        const baseEndTime = getStaggeredEndTime(lot.auction.endsAt, index)
+        const effectiveEnd = calculateItemEndTime(
+          baseEndTime,
           lot.lastBidAt,
           lot.auction.softCloseWindowSec,
           lot.auction.softCloseExtendSec
         )
         
-        const isExtended = itemEndTime > lot.auction.endsAt
-        
-        if (lot.lastBidAt) {
-          console.log(`Item ${lot.title.substring(0, 20)}: lastBid=${new Date(lot.lastBidAt).toLocaleTimeString()}, closes=${itemEndTime.toLocaleTimeString()}, extended=${isExtended}`)
-        }
+        const isExtended = effectiveEnd > baseEndTime
         
         return {
           ...lot,
-          effectiveEndTime: itemEndTime.toISOString(),
+          itemIndex: index,
+          baseEndTime: baseEndTime.toISOString(),
+          effectiveEndTime: effectiveEnd.toISOString(),
           isExtended,
         }
       })
@@ -77,21 +76,44 @@ export async function GET(
         return NextResponse.json([])
       }
       
-      // Manually fetch bid counts for each lot
+      // Fetch auction endsAt for stagger calculation
+      const { data: auction } = await supabaseServer
+        .from('Auction')
+        .select('endsAt, softCloseWindowSec, softCloseExtendSec')
+        .eq('id', id)
+        .single()
+
+      const { getStaggeredEndTime, calculateItemEndTime } = await import('@/lib/soft-close')
+      const auctionEndsAt = auction?.endsAt ? auction.endsAt + (auction.endsAt.endsWith('Z') ? '' : 'Z') : new Date().toISOString()
+
       const lotsWithCounts = await Promise.all(
-        lots.map(async (lot: any) => {
+        lots.map(async (lot: any, index: number) => {
           const { count } = await supabaseServer
             .from('Bid')
             .select('*', { count: 'exact', head: true })
             .eq('lotId', lot.id)
-          
+
+          const baseEndTime = getStaggeredEndTime(auctionEndsAt, index)
+          const lastBid = lot.lastBidAt ? (lot.lastBidAt.endsWith('Z') ? lot.lastBidAt : lot.lastBidAt + 'Z') : null
+          const effectiveEnd = calculateItemEndTime(
+            baseEndTime,
+            lastBid,
+            auction?.softCloseWindowSec ?? 120,
+            auction?.softCloseExtendSec ?? 120
+          )
+          const isExtended = effectiveEnd > baseEndTime
+
           return {
             ...lot,
+            itemIndex: index,
+            baseEndTime: baseEndTime.toISOString(),
+            effectiveEndTime: effectiveEnd.toISOString(),
+            isExtended,
             _count: { bids: count || 0 },
           }
         })
       )
-      
+
       return NextResponse.json(ensureUtcDatesArray(lotsWithCounts))
     }
   } catch (error) {

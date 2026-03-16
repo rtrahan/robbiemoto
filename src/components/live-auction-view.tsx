@@ -410,13 +410,18 @@ function LotCard({ lot: initialLot, onLotUpdate }: { lot: any; onLotUpdate: () =
     }`}>
       {/* Media Carousel */}
       <div className="aspect-square bg-gray-50 overflow-hidden relative">
-        {/* Per-Item Countdown for Soft Close */}
-        {(lot.isExtended || lot.effectiveEndTime) && (
+        {/* Per-Item Countdown Timer */}
+        {effectiveEndTime && !isClosed && (
           <ItemCountdown 
             key={lot.effectiveEndTime} 
-            endsAt={lot.effectiveEndTime || lot.auction?.endsAt} 
+            endsAt={effectiveEndTime} 
             isExtended={lot.isExtended}
           />
+        )}
+        {isClosed && (
+          <div className="absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold shadow-md bg-gray-800 text-white z-10">
+            Closed
+          </div>
         )}
         {lot.mediaUrls && lot.mediaUrls.length > 0 ? (
           <>
@@ -499,6 +504,16 @@ function LotCard({ lot: initialLot, onLotUpdate }: { lot: any; onLotUpdate: () =
       {/* Details */}
       <div className="p-4 space-y-4">
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+              #{(lot.itemIndex ?? 0) + 1}
+            </span>
+            {effectiveEndTime && (
+              <span className="text-[10px] text-gray-400">
+                Closes {new Date(effectiveEndTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+              </span>
+            )}
+          </div>
           <h3 className="font-serif text-lg font-light text-gray-900 mb-1 line-clamp-2">
             {lot.title}
           </h3>
