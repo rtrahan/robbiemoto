@@ -71,22 +71,27 @@ export async function POST(request: NextRequest) {
     const bucketName = lotId ? 'auction-media' : 'product-media'
     console.log('Using bucket:', bucketName)
     
-    // Upload all files
     const uploadedUrls = []
-    
+    const results = []
+
     for (const file of filesToUpload) {
       const arrayBuffer = await file.arrayBuffer()
       const buffer = new Uint8Array(arrayBuffer)
-      
-      const fileExt = file.name.split('.').pop()
+
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'bin'
       const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`
-      
-      console.log('Uploading to bucket:', bucketName, 'File:', fileName)
-      
+
+      const isHeic = fileExt === 'heic' || fileExt === 'heif'
+      const contentType = isHeic ? 'image/heic' : (file.type || 'application/octet-stream')
+      const isImage = contentType.startsWith('image/') || isHeic
+      const fileType = isImage ? 'image' : 'video'
+
+      console.log('Uploading to bucket:', bucketName, 'File:', fileName, 'Type:', contentType)
+
       const { data, error } = await supabase.storage
         .from(bucketName)
         .upload(fileName, buffer, {
-          contentType: file.type,
+          contentType,
           cacheControl: '3600',
           upsert: false
         })
@@ -98,27 +103,35 @@ export async function POST(request: NextRequest) {
           bucket: bucketName,
           file: fileName,
         })
-        
-        // Don't fail silently - throw the error
+
         return NextResponse.json({
           error: `Upload failed: ${error.message}`,
           hint: 'Check Supabase Storage policies for ' + bucketName,
           bucket: bucketName,
         }, { status: 500 })
       }
-      
+
       const { data: { publicUrl } } = supabase.storage
         .from(bucketName)
         .getPublicUrl(fileName)
-      
+
       console.log('✅ Upload successful, URL:', publicUrl)
       uploadedUrls.push(publicUrl)
+      results.push({
+        url: publicUrl,
+        fileName: file.name,
+        type: fileType,
+      })
     }
 
+    const first = results[0] || {}
     return NextResponse.json({
       success: true,
       urls: uploadedUrls,
-      url: uploadedUrls[0], // For backwards compatibility
+      url: first.url,
+      fileName: first.fileName,
+      type: first.type,
+      results,
     })
   } catch (error) {
     console.error('Upload exception:', error)

@@ -167,7 +167,7 @@ export default function NewProductPage() {
                 <label className="cursor-pointer">
                   <input
                     type="file"
-                    accept="image/*,video/*"
+                    accept="image/*,image/heic,image/heif,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,video/*"
                     multiple
                     onChange={async (e) => {
                       const files = Array.from(e.target.files || [])
@@ -369,7 +369,7 @@ export default function NewProductPage() {
                                   <label className="cursor-pointer">
                                     <input
                                       type="file"
-                                      accept="image/*"
+                                      accept="image/*,image/heic,image/heif,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif"
                                       onChange={async (e) => {
                                         const file = e.target.files?.[0]
                                         if (!file) return

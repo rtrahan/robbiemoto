@@ -637,7 +637,7 @@ export default function EditAuctionPage() {
                   <label className="block">
                     <input
                       type="file"
-                      accept="image/*,video/*"
+                      accept="image/*,image/heic,image/heif,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,video/*"
                       onChange={(e) => handleImageUpload('new', e)}
                       className="hidden"
                       multiple
@@ -866,7 +866,7 @@ export default function EditAuctionPage() {
                         <label className="aspect-square bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col items-center justify-center border-b-2 border-blue-200 relative cursor-pointer hover:from-blue-100 hover:to-blue-200 transition-colors group/upload">
                           <input
                             type="file"
-                            accept="image/*,video/*"
+                            accept="image/*,image/heic,image/heif,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,video/*"
                             onChange={(e) => handleImageUpload(lot.id, e)}
                             className="hidden"
                           />
@@ -1080,7 +1080,7 @@ export default function EditAuctionPage() {
               <label className="block">
                 <input
                   type="file"
-                  accept="image/*,video/*"
+                  accept="image/*,image/heic,image/heif,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,video/*"
                   onChange={(e) => handleImageUpload(editingLot || 'new', e)}
                   className="hidden"
                   multiple
