@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { ensureUtcDates } from '@/lib/utils'
 
-// PATCH - Update lot
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -33,25 +33,47 @@ export async function PATCH(
       })
       
       return NextResponse.json(lot)
-    } catch (dbError) {
-      // Database not available - simulate success
-      console.log('Database not available, simulating lot update')
-      return NextResponse.json({
-        id,
-        ...body,
-        updatedAt: new Date(),
-      })
+    } catch (prismaError) {
+      console.log('Prisma failed, using Supabase to update lot')
+
+      const { supabaseServer } = await import('@/lib/supabase-server')
+      if (!supabaseServer) {
+        throw new Error('No database available')
+      }
+
+      const updateData: Record<string, any> = {
+        updatedAt: new Date().toISOString(),
+      }
+      if (title !== undefined) updateData.title = title
+      if (description !== undefined) updateData.description = description
+      if (condition !== undefined) updateData.condition = condition
+      if (startingBidCents !== undefined) updateData.startingBidCents = startingBidCents
+      if (reserveCents !== undefined) updateData.reserveCents = reserveCents
+      if (mediaUrls !== undefined) updateData.mediaUrls = mediaUrls
+
+      const { data: lot, error } = await supabaseServer
+        .from('Lot')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Supabase lot update error:', error)
+        throw new Error(error.message)
+      }
+
+      return NextResponse.json(ensureUtcDates(lot))
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating lot:', error)
     return NextResponse.json(
-      { error: 'Failed to update lot' },
+      { error: error?.message || 'Failed to update lot' },
       { status: 500 }
     )
   }
 }
 
-// DELETE - Delete lot
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -65,17 +87,31 @@ export async function DELETE(
       })
       
       return NextResponse.json({ success: true })
-    } catch (dbError) {
-      // Database not available - simulate success for demo
-      console.log('Database not available, simulating lot deletion')
+    } catch (prismaError) {
+      console.log('Prisma failed, using Supabase to delete lot')
+
+      const { supabaseServer } = await import('@/lib/supabase-server')
+      if (!supabaseServer) {
+        throw new Error('No database available')
+      }
+
+      const { error } = await supabaseServer
+        .from('Lot')
+        .delete()
+        .eq('id', id)
+
+      if (error) {
+        console.error('Supabase lot delete error:', error)
+        throw new Error(error.message)
+      }
+
       return NextResponse.json({ success: true })
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting lot:', error)
     return NextResponse.json(
-      { error: 'Failed to delete lot' },
+      { error: error?.message || 'Failed to delete lot' },
       { status: 500 }
     )
   }
 }
-
