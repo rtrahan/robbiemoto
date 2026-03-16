@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
+import type { AuctionStatus } from '@prisma/client'
 
-function computeAuctionStatus(startsAt: string, endsAt: string): string {
+function computeAuctionStatus(startsAt: string, endsAt: string): AuctionStatus {
   const now = new Date()
   const start = new Date(startsAt)
   const end = new Date(endsAt)
